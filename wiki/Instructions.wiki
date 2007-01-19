@@ -1,4 +1,5 @@
 #summary Instalation instructions
+#labels Featured,Phase-Deploy
 ==Instalation==
 
 
@@ -92,10 +93,10 @@ This allows to hide pages the user has no reading access.
 
 
 Access "Groups" from the main menu in order to manage the groups:
-* "Groups > Groups" - to manage Existing Groups
-* "Groups > Pages Access" - to add and remove pages from groups
-* "Groups > Access per Page" - to add and remove groups from pages
-* "Groups > Members" - to add and remove users from groups
+ * "Groups > Groups" - to manage Existing Groups
+ * "Groups > Pages Access" - to add and remove pages from groups
+ * "Groups > Access per Page" - to add and remove groups from pages
+ * "Groups > Members" - to add and remove users from groups
 
 Note: Free Access Pages are pages without a group.
 
@@ -107,4 +108,3 @@ Access "Users > Authors & Users" and edit a user to add or remove users from a g
 While editing or creating a page, the user can choose the groups with access to the page, by checking/unchecking the groups after the page edit panel.
 
 Keep in mind that both the administrators and the author can edit the page.
-
