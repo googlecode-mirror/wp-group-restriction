@@ -1,0 +1,9 @@
+#summary Latest news about this project.
+#labels Featured
+
+==January 19th, 2007 - Version 0.9 Beta released==
+The first release of the *wp-group-restriction* plugin for [http://wordpress.org/ Wordpress]
+was made public. Feel free to download it, test it, and improve it :).
+
+Keep in mind that it is still in a Beta version, so if you find any issue please let me know by submitting it here.
+
