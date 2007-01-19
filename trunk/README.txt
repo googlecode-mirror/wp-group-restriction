@@ -8,8 +8,8 @@
 
 ---=[ 1 - General Information ]=------------------------------------------------
 
-Version: 0.9
-Date: 19/01/2006
+Version: 0.3
+Date: 23/11/2006
 Author: Tiago Pocinho, Siemens Networks, S.A.
 
 This plugin is still under development.
@@ -112,8 +112,9 @@ _____________________
 
 Access "Groups" from the main menu in order to manage the groups:
 * "Groups > Groups" - to manage Existing Groups
-* "Groups > Create" - to create a new group
-* "Groups > Page Groups" - to add and remove pages from groups
+* "Groups > Pages Access" - to add and remove pages from groups
+* "Groups > Access per Page" - to add and remove groups from pages
+* "Groups > Members" - to add and remove users from groups 
 
 Note: Free Access Pages are pages without a group.
 
