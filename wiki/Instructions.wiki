@@ -86,12 +86,6 @@ This allows to hide pages the user has no reading access.
 
 ===Group Management===
 
-    * Groups
-    * Pages Access
-    * Access per Page
-    * Members
-
-
 Access "Groups" from the main menu in order to manage the groups:
  * "Groups > Groups" - to manage Existing Groups
  * "Groups > Pages Access" - to add and remove pages from groups
