@@ -1,8 +1,8 @@
 #summary This page logs changes in the SVN repository.
+#labels Featured
 
 == Change Log ==
 ===January 19th, 2007===
  * Fixed layout problem in the Users edit page in the Admin.
  * Changed used variable to get user level (to a variable independent of the wordpress tables prefix).
-
 
