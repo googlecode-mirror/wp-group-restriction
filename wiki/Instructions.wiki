@@ -1,15 +1,15 @@
-#summary Instalation instructions
+#summary Installation and Configuration instructions
 #labels Featured,Phase-Deploy
-==Instalation==
+==Installation==
 
 
-===Simple Instalation===
+===Simple Installation===
 
 After downloading this plugin, extract the directory "wp-group-restriction".
 
-Go to the wordpress back-office and activate the plugin. This will create the needed tables in the database.
+Go to the Wordpress back-office and activate the plugin. This will create the needed tables in the database.
 
-===Advanced Instalation===
+===Advanced Installation===
 
 In order to filter out the pages the current user can no edit from the pages list (Manage Pages), replace the line:
 
