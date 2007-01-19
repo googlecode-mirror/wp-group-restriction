@@ -285,15 +285,20 @@ Groups with edit access</h3>
 
   	$groups = $this->getAllGroupsWithUser($userId);
 
-  	echo "<h3>User Groups</h3>";
+    
+    echo "<br style='clear:both;'/><h3>User Groups </h3>";
 
   	if(isset($groups)){
+  	  if($read && count($groups)==0){
+				echo "<div>The user is not associated with groups.</div>";
+			}
   		foreach ($groups as $result) {
   			if($read){
   				if($result->id_user == $userId){
   					echo "<div>$result->name</div>";
   				}
   			}else{
+  			 
   				if($result->id_user == $userId){
   					$checked = "checked";
   				}else{
@@ -313,7 +318,7 @@ Groups with edit access</h3>
   
   function userGroupsView(){
   	global $profileuser;
-  	if($profileuser->wp_user_level > 7){
+  	if($profileuser->user_level > 7){
   		//it is an admin so he can edit himself
   		$this->userGroupsProfile();
   	}else{
