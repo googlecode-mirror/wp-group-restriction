@@ -11,17 +11,34 @@ Go to the Wordpress back-office and activate the plugin. This will create the ne
 
 ===Advanced Installation===
 
-In order to filter out the pages the current user can no edit from the pages list (Manage Pages), replace the line:
 
-*wordpress\wp-admin\edit-pages.php Line 28*
+To filter out access from the front office, update your theme to call: 
+{{{  
+  if(class_exists("userGroups")){
+    $groups = new userGroups();
+    $pagesToExclude = userGroups::getPagesToExclude();
+  }
+}}}
+and add the returning value to 
+{{{
+wp_list_pages("exclude=" . $pagesToExclude . "&sort_column=menu_order&depth=1&title_li=");
+}}}
+This allows to hide pages the user has no reading access.
+
+====For Wordpress < 2.1====
+For Wordpress versions *prior to 2.1*, a hack is needed to filter out the pages the current user can edit from the pages list (Manage Pages) in the backoffice.
+In order to do so, replace the line:
+
+*wordpress\wp-admin\edit-pages.php Line 27*
 {{{                                                                                          
+else
   $posts = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_status = 'static'");
 }}}                                                                                         
 
 by 
-*wordpress\wp-admin\edit-pages.php Line 28*
 
 {{{
+else{
   /*plugin tables*/
   $table_groupsPage = $table_prefix . "ug_GroupsPage";
   $table_groups = $table_prefix . "ug_Groups";
@@ -66,21 +83,28 @@ by
   }
   //$query ="SELECT * FROM $wpdb->posts WHERE post_status = 'static'";
   $posts = $wpdb->get_results($query);
-
+}
 }}}
 
-To filter out access from the front office, update your theme to call: 
-{{{  
-  if(class_exists("userGroups")){
-    $groups = new userGroups();
-    $pagesToExclude = userGroups::getPagesToExclude();
+and 
+
+*wordpress\wp-admin\edit-pages.php around line 60*
+{{{
+  if ( isset($_GET['s']) ) {
+	...
+     endforeach;
+  } else {
+}}}                                                                                          
+replace `page_rows();` by `page_rows(0,0,$posts);` getting something like
+
+{{{
+  if ( isset($_GET['s']) ) {
+	...
+     endforeach;
+  } else {
+     page_rows(0,0,$posts);
   }
 }}}
-and add the returning value to 
-{{{
-wp_list_pages("exclude=" . $pagesToExclude . "&sort_column=menu_order&depth=1&title_li=");
-}}}
-This allows to hide pages the user has no reading access.
 
 ==Configuration==
 
@@ -102,3 +126,5 @@ Access "Users > Authors & Users" and edit a user to add or remove users from a g
 While editing or creating a page, the user can choose the groups with access to the page, by checking/unchecking the groups after the page edit panel.
 
 Keep in mind that both the administrators and the author can edit the page.
+
+
