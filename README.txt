@@ -8,8 +8,8 @@
 
 ---=[ 1 - General Information ]=------------------------------------------------
 
-Version: 0.3
-Date: 23/11/2006
+Version: 1.0 RC1
+Date: 25/01/2006
 Author: Tiago Pocinho, Siemens Networks, S.A.
 
 This plugin is still under development.
@@ -35,11 +35,24 @@ Go to the wordpress back-office and activate the plugin. This will create the ne
 3.2) Advanced Instalation
 _________________________
 
-In order to filter out the pages the current user can no edit from the pages list (Manage Pages), replace the line:
 
-+-wordpress\wp-admin\edit-pages.php Line 28------------------------------------------------+
-                                                                                          
-  $posts = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_status = 'static'");
+To filter out access from the front office, update your theme, where you use the function wp_list_pages, to call: 
+  if(class_exists("userGroups")){
+    $groups = new userGroups();
+    $pagesToExclude = userGroups::getPagesToExclude();
+  }
+and add the returning value to 
+	wp_list_pages("exclude=" . $pagesToExclude . "&sort_column=menu_order&depth=1&title_li="); ?>
+This allows to hide pages the user has no reading access.
+
+
+
+If your wordpress version is prior to 2.1, you can use the following hack to prevent pages from beeing displayed in the backoffice replace:
+
+
++-wordpress\wp-admin\edit-pages.php Line 28------------------------------------------------+                                                                                          
+else  
+   $posts = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_status = 'static'");
                                                                                           
 +------------------------------------------------------------------------------------------+
 
@@ -48,7 +61,7 @@ by
 
 +-wordpress\wp-admin\edit-pages.php Line 28------------------------------------------------+
 
-  
+else {
     /*plugin tables*/
   $table_groupsPage = $table_prefix . "ug_GroupsPage";
   $table_groups = $table_prefix . "ug_Groups";
@@ -93,17 +106,31 @@ by
   }
   //$query ="SELECT * FROM $wpdb->posts WHERE post_status = 'static'";
   $posts = $wpdb->get_results($query);
+}
 
 +------------------------------------------------------------------------------------------+
 
-To filter out access from the front office, update your theme to call: 
-	if(class_exists("userGroups")){
-    $groups = new userGroups();
-    $pagesToExclude = userGroups::getPagesToExclude();
+and 
+
++-wordpress\wp-admin\edit-pages.php around line 60 ----------------------------------------+                                                                                          
+  if ( isset($_GET['s']) ) {
+	...
+     endforeach;
+  } else {
+                                                                                          
++------------------------------------------------------------------------------------------+
+
+replace "page_rows();" by "page_rows(0,0,$posts);" getting something like
+
++-wordpress\wp-admin\edit-pages.php around line 68 ----------------------------------------+                                                                                          
+  if ( isset($_GET['s']) ) {
+	...
+     endforeach;
+  } else {
+     page_rows(0,0,$posts);
   }
-and add the returning value to 
-	wp_list_pages("exclude=" . $pagesToExclude . "&sort_column=menu_order&depth=1&title_li="); ?>
-This allows to hide pages the user has no reading access.
+                                                                                          
++------------------------------------------------------------------------------------------+
 
 ---=[ 4 - Configuration]=-------------------------------------------------------
 
@@ -128,7 +155,7 @@ ______________
 
 While editing or creating a page, the user can choose the groups with access to the page, by checking/unchecking the groups after the page edit panel.
 
-Keep in mind that both the administrators and the author can edit the page.
+Keep in mind that both the administrators and the author can read the page.
 
 
 ---=[ 5 - Use this plugin in other wordpress plugins]=--------------------------
