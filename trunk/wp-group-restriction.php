@@ -5,7 +5,7 @@
  Plugin URI: #
  Description: Allows to define groups of users and their access to Edit and View Pages.
  Author: Tiago Pocinho, Siemens Networks, S.A.
- Version: 0.2
+ Version: 0.9 Beta
  */
 
 class userGroups {
@@ -43,6 +43,7 @@ class userGroups {
 
   	//filter the search removing pages with no access
   	add_filter('posts_where', array(&$this,'exclude_from_search'));
+  	add_filter('posts_where_paged', array(&$this,'exclude_from_edit'));
   }
   
   /**
@@ -53,7 +54,6 @@ class userGroups {
    */
   function exclude_from_search($where) {
   	global $wp_query;
-  	
 	if($_REQUEST["s"]!=""){
 	  	//get pages to remove from search
 	  	$pages = $this->getPagesToExclude();
@@ -70,6 +70,29 @@ class userGroups {
   }
   
   /**
+   * removes write restricted pages from the backoffice
+   * 
+   * @param string $where SQL query from wordpress search
+   * @return string updated query with pages to exclude
+   */
+  function exclude_from_edit($where) {
+  	global $wp_query;
+  	if(strpos($_SERVER["PHP_SELF"],"edit-pages.php") != false){
+  		$pages = $this->getPagesToExclude(true);
+	  	if($pages != ""){
+	  		$where = "AND ( 1=1 ". $where . " ) ";
+		  	$pagesArray = explode(",",$pages);
+		  	foreach($pagesArray as $page){
+		  		$where .= " AND ID <> '$page' ";
+		  		//remove this page child elements as well
+		  		$where .= $this->exclude_children($page);
+		  	}
+	  	}
+	}
+	return $where;
+  }
+  
+  /**
    * returns conditions to exclude children from a page in a SLQ statement
    * @return string children to be excluded
    */
@@ -77,7 +100,8 @@ class userGroups {
   	global $wpdb;
   	$returnVal = "";
   	if($parentID != "" && isset($parentID)){
-  		$query = "SELECT * FROM ".$wpdb->posts." WHERE post_status='static'
+  	   //added "OR post_type='page'" for wordpress 2.1 compatibility
+  		$query = "SELECT * FROM ".$wpdb->posts." WHERE (post_status='static' OR post_type='page')
 			AND post_parent = $parentID;";
   		$children = $wpdb->get_results($query);
   		if(isset($children) && $children != ""){
@@ -109,7 +133,7 @@ class userGroups {
 	style="margin: 5px 0px 0px -7px;background: #fff url(images/box-head-left.gif) no-repeat top left;">
 <h3 class="dbx-handle"
 	style="margin-left: 7px;	margin-bottom: -7px;padding: 6px 1em 0px 3px;	background: #2685af url(images/box-head-right.gif) no-repeat top right;">
-Groups with edit access</h3>
+Groups with read access</h3>
 </div>
 <div
 	style="margin-left: 10px;margin-right: 0px;background: url(images/box-bg-left.gif) repeat-y left;">
@@ -235,7 +259,7 @@ Groups with edit access</h3>
   }
   
   /**
-   * Checks if the user can edir the given page
+   * Checks if the user can edit the given page
    * @return array and empty array if no access is granted or the $allcals array ortherwise.
    **/
   function check_the_user_group() {
@@ -254,15 +278,24 @@ Groups with edit access</h3>
   			}
   		}
   	}
-  	//checks if it is a static post (page) and if the intent is to edit a page
-  	if($idPostTemp && 'static' == get_post_status($idPostTemp) && 'edit' == $_REQUEST['action'] && ($reqcaps[0] == 'edit_pages') && (is_numeric($args[2]))) {
-  		//if user is admin or the page is not group resticted give access
+  	
+  	
+  	$is_edit = in_array('edit_pages',$reqcaps); // for wordpress <2.1
+  	$is_edit = $is_edit || in_array('delete_pages',$reqcaps);
+  	$is_edit = $is_edit || in_array('delete_published_pages',$reqcaps); // for wordpress >=2.1
+    $is_edit = $is_edit || in_array('edit_published_pages',$reqcaps);// for wordpress >=2.1
+  	
+    //checks if it is a static post (page) and if the intent is to edit a page
+  	if($idPostTemp && ('static' == get_post_status($idPostTemp) /* wordpress < 2.1 */
+        || (function_exists('get_post_type') && 'page' == get_post_type($idPostTemp)) ) /*wordpress >=2.1*/ 
+       && 'edit' == $_REQUEST['action'] && $is_edit && (is_numeric($args[2]))) {
+      //if user is admin or the page is not group resticted give access
   		if(!$this->hasWritePageAccess($idPostTemp)){
   			return array();
   		}
   	} else {
   		//checks if the edit link should appear in the wordpress front-office for the given page
-  		if(($reqcaps[0] == 'edit_pages') && (is_numeric($args[2]))) {
+  		if($is_edit && (is_numeric($args[2]))) {
   			//if user is admin or the page is not group resticted give access
   			if(!$this->hasWritePageAccess($idPostTemp)){
   				return array();
@@ -389,11 +422,11 @@ Groups with edit access</h3>
   	/*Groups table*/
   	if (!userGroups::tableExists($table_groups)) {
   		$sql = "CREATE TABLE ".$table_groups." (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         name tinytext NOT NULL,
         homepage text,
         UNIQUE KEY id (id)
-       );";
+       ) ENGINE='INNODB';";
 
 
   		dbDelta($sql);
@@ -402,14 +435,14 @@ Groups with edit access</h3>
     /*Groups-Users relation table*/
   	if (!userGroups::tableExists($table_groupsUsers)) {
   		$sql = "CREATE TABLE ".$table_groupsUsers." (
-        id_group bigint(20) NOT NULL,
-        id_user bigint(20) NOT NULL,
+        id_group bigint(20) UNSIGNED NOT NULL,
+        id_user bigint(20) UNSIGNED NOT NULL,
         FOREIGN KEY (id_group) REFERENCES ".$table_groups."(id)
                       ON DELETE CASCADE,
         FOREIGN KEY (id_user) REFERENCES ".$table_users."(ID)
                       ON DELETE CASCADE,
 		PRIMARY KEY(id_group, id_user)
-       );";
+       ) ENGINE='INNODB';";
 
   		dbDelta($sql);
   	}
@@ -417,8 +450,8 @@ Groups with edit access</h3>
   	/*Groups-Page relation table*/
   	if (!userGroups::tableExists($table_groupsPage)) {
   		$sql = "CREATE TABLE ".$table_groupsPage." (
-        id_group bigint(20) NOT NULL,
-        id_page bigint(20) NOT NULL,
+        id_group bigint(20)  UNSIGNED NOT NULL,
+        id_page bigint(20) UNSIGNED NOT NULL,
         exc_read tinyint(1) NOT NULL,
         exc_write tinyint(1) NOT NULL,
         FOREIGN KEY (id_group) REFERENCES ".$table_groups."(id)
@@ -426,7 +459,7 @@ Groups with edit access</h3>
         FOREIGN KEY (id_page) REFERENCES ".$table_pages."(ID)
                       ON DELETE CASCADE,
 		PRIMARY KEY(id_group, id_page)
-       );";
+       ) ENGINE='INNODB';";
 
   		dbDelta($sql);
   	}
@@ -436,15 +469,15 @@ Groups with edit access</h3>
   	
   	if (!userGroups::tableExists($table_groupsGeneric)) {
 		$sql = "CREATE TABLE ".$table_groupsGeneric." (
-					id_group bigint(20) NOT NULL,
-					id_resource bigint(20) NOT NULL,
+					id_group bigint(20) UNSIGNED NOT NULL,
+					id_resource bigint(20) UNSIGNED NOT NULL,
 					permission text NOT NULL,
 					plugin_name VARCHAR(128) NOT NULL,
 					description text,
 					FOREIGN KEY (id_group) REFERENCES ".$table_groups."(id)
 						ON DELETE CASCADE,
 					PRIMARY KEY(id_group, id_resource, plugin_name)					
-				);";
+				) ENGINE='INNODB';";
 
   		dbDelta($sql);
   	}
@@ -541,14 +574,14 @@ Groups with edit access</h3>
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-
+    //added "OR post_type='page'" for wordpress 2.1 compatibility
   	$query = "SELECT * FROM
                 (Select p.* from ".$table_pages." p
                 INNER JOIN (".$table_groupsPage." gp )
-                ON (p.post_status='static' and gp.id_page = p.ID and gp.id_group='".$groupId."')
+                ON ((p.post_status='static' OR p.post_type='page') and gp.id_page = p.ID and gp.id_group='".$groupId."')
                 UNION
                 Select * from ".$table_pages." p2
-                WHERE post_status='static' and ID NOT IN 
+                WHERE (post_status='static' OR post_type='page') and ID NOT IN 
                   (
                     Select p.id from ".$table_pages." p
                     INNER JOIN (".$table_groupsPage." gp )
@@ -556,7 +589,7 @@ Groups with edit access</h3>
                   )
                 )t
                 Left JOIN (".$table_groupsPage." gp )
-                ON (t.post_status='static' and gp.id_page = t.ID and gp.id_group='".$groupId."') ORDER BY post_title;";
+                ON ((t.post_status='static' OR t.post_type='page') and gp.id_page = t.ID and gp.id_group='".$groupId."') ORDER BY post_title;";
 
   	$results = $wpdb->get_results( $query );
 
@@ -644,11 +677,11 @@ Groups with edit access</h3>
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-
+    //added "OR post_type='page'" for wordpress 2.1 compatibility
   	$query = "SELECT * from (Select * from ".$table_pages." p
               LEFT JOIN (".$table_groupsPage." gp )
               ON (gp.id_page = p.ID and gp.id_group='".$groupId."'))t
-              WHERE t.post_status='static'
+              WHERE (t.post_status='static' OR t.post_type='page')
               ORDER BY t.post_title;";
 
   	$results = $wpdb->get_results( $query );
@@ -677,14 +710,12 @@ Groups with edit access</h3>
   function getAllPagesWithGroupByParent($groupId, $parent){
   	global $table_prefix, $wpdb;
 
-  	/*plugin tables*/
-  	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-
+    //added "OR post_type='page'" for wordpress 2.1 compatibility
   	$query = "SELECT * from (Select * from ".$wpdb->posts." p
               LEFT JOIN ($table_groupsPage gp )
               ON (gp.id_page = p.ID and gp.id_group='$groupId'))t
-              WHERE t.post_status='static' AND t.post_parent='$parent'
+              WHERE (t.post_status='static' OR t.post_type='page') AND t.post_parent='$parent'
               ORDER BY t.post_title;";
 
   	$results = $wpdb->get_results( $query );
@@ -708,10 +739,10 @@ Groups with edit access</h3>
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-
+    //added �OR p.post_type='page'� for wordpress 2.1 compatibility
   	$query = "Select * from $table_pages p
               INNER JOIN ($table_groupsPage gp )
-              ON (p.post_status='static' and gp.id_page = p.ID 
+              ON ((p.post_status='static' OR p.post_type='page') and gp.id_page = p.ID 
                 and gp.id_group='$groupId' $criteria) 
               ORDER BY post_title;";
 
@@ -756,9 +787,9 @@ Groups with edit access</h3>
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-
+    //added "OR post_type='page'" for wordpress 2.1 compatibility
   	$query = "Select * from $table_pages
-              WHERE post_status='static' and ID NOT IN (
+              WHERE (post_status='static' OR post_type='page') and ID NOT IN (
               	Select p.id from $table_pages p
               	INNER JOIN ($table_groupsPage gp )
               	ON (gp.id_page = p.ID $criteria )
@@ -802,9 +833,9 @@ Groups with edit access</h3>
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-
+    //added "OR post_type='page'" for wordpress 2.1 compatibility
   	$query = "Select * from $table_pages
-              WHERE ID=$id_page and post_status='static' and ID NOT IN (
+              WHERE ID=$id_page and (post_status='static' OR post_type='page') and ID NOT IN (
               	Select p.id from $table_pages p
               	INNER JOIN ($table_groupsPage gp )
               	ON (gp.id_page = p.ID $criteria )
@@ -991,21 +1022,19 @@ Groups with edit access</h3>
   function deleteGroup ($id){
   	global $table_prefix, $wpdb;
 
-  	$table_groups = $table_prefix . "ug_Groups";
+  	$table = $table_prefix . "ug_Groups";
   	if($id=="" || $this->getGroup($id) == ""){
   		return false;
   	}
   	 
-  	if (userGroups::tableExists($table_groups)) {
-  		$delete = "DELETE FROM ".$table_groups.
-                " WHERE id='".$id."';";
+  	if (userGroups::tableExists($table)) {
+  		$delete = "DELETE FROM $table WHERE id='$id';";
+      $results = $wpdb->query( $delete );
 
-                $results = $wpdb->query( $delete );
-
-                $this->deleteAllGroupUser($id);
-                $this->deleteAllGroupPages($id);//deletes correspondent relations group-pages
-                
-                return true;
+      $this->deleteAllGroupUser($id);
+      $this->deleteAllGroupPages($id);//deletes correspondent relations group-pages
+      
+      return true;
   	}else{
   		return false;
   	}
@@ -1033,18 +1062,16 @@ Groups with edit access</h3>
   function createGroup ($name, $homepage = ''){
   	global $table_prefix, $wpdb;
 
-  	$table_groups = $table_prefix . "ug_Groups";
+  	$table = $table_prefix . "ug_Groups";
   	if(!$this->isValidName($name)){
   		return false;
   	}
   	 
-  	if (userGroups::tableExists($table_groups)) {
-  		$insert = "INSERT INTO ".$table_groups.
-                " (name,homepage) ".
-                "VALUES ('".$name."','".$homepage."')";
+  	if (userGroups::tableExists($table)) {
+  		$insert = "INSERT INTO $table (name,homepage) VALUES ('$name','$homepage')";
 
-                $results = $wpdb->query( $insert );
-                return $results != '';
+      $results = $wpdb->query( $insert );
+      return $results != '';
   	}else{
   		return false;
   	}
@@ -1061,7 +1088,7 @@ Groups with edit access</h3>
   function updateGroup ($groupID, $name, $homepage = ''){
   	global $table_prefix, $wpdb;
 
-  	$table_groups = $table_prefix . "ug_Groups";
+  	$table = $table_prefix . "ug_Groups";
 
   	$prevName = $wpdb->get_var("SELECT name FROM $table_groups WHERE id='$groupID';");
 
@@ -1070,9 +1097,8 @@ Groups with edit access</h3>
   	}
   	 
   	if (userGroups::tableExists($table)) {
-  		$query = "UPDATE $table_groups
-                SET name = '$name', homepage='$homepage'
-                WHERE id=$groupID;";
+  		$query = "UPDATE $table SET name = '$name', homepage='$homepage'
+                WHERE id='$groupID';";
   		$results = $wpdb->query( $query );
   		return true;
   	}else{
@@ -1245,7 +1271,7 @@ Groups with edit access</h3>
   	$table_posts = $table_prefix . "posts";
   	$table_groupsUsers = $table_prefix . "ug_GroupsUsers";
   	$table_groupsPages = $table_prefix . "ug_GroupsPage";
-
+    //added "OR post_type='page'" for wordpress 2.1 compatibility
   	$query = "SELECT DISTINCT gp.id_page as ID
               FROM $table_groupsPages gp,
             			(SELECT id_group FROM $table_groupsUsers 
@@ -1253,7 +1279,7 @@ Groups with edit access</h3>
         			WHERE gp.id_group = gu.id_group $criteria 
               UNION
               SELECT ID FROM $table_posts
-              WHERE post_author='$userID' and post_status='static';";
+              WHERE post_author='$userID' and (post_status='static' OR post_type='page');";
 
   	$results = $wpdb->get_results( $query );
 
@@ -1373,10 +1399,10 @@ Groups with edit access</h3>
   
   /**
    * Gets a list of pages to exclude from the menus
-   * 
+   * @param boolean $forEdit if set to true will search for pages with edit access restriction
    * @return string Page ids separated by commas
    */
-  function getPagesToExclude(){
+  function getPagesToExclude($forEdit = false){
   	global $wpdb, $user_level, $wp_query, $user_ID, $table_prefix;
 
   	get_currentuserinfo();
@@ -1388,6 +1414,11 @@ Groups with edit access</h3>
   		return "";
   	}
   	
+  	$accessType = "exc_read = '1'";
+  	if($forEdit){
+  		$accessType = "exc_write = '1'";
+  	}
+  	
   	// is user already logged in?
   	 
   	$table_groupsPages = $table_prefix . "ug_GroupsPage";
@@ -1395,6 +1426,7 @@ Groups with edit access</h3>
   	$table_groups = $table_prefix . "ug_Groups";
 
   	if($user_ID!= ""){
+  	  //added �OR p.post_type='page'� for wordpress 2.1 compatibility
   		$query = "SELECT DISTINCT id_page
                   FROM $table_groupsPages 
                   WHERE exc_read = '1'
@@ -1402,20 +1434,21 @@ Groups with edit access</h3>
                       (SELECT gp.id_page 
                         FROM $table_groupsPages gp, $table_groups g, 
                             ".$wpdb->posts." p, $table_groupsUsers gu
-                        WHERE p.post_status = 'static' 
+                        WHERE (p.post_status='static' OR p.post_type='page') 
                               AND p.id=gp.id_page 
                               AND gp.id_group=g.id
                               AND g.id=gu.id_group 
                               AND gu.id_user='$user_ID'
-                              AND gp.exc_read = '1');";
+                              AND gp.$accessType);";
   	}else{
   		$query = "SELECT DISTINCT gp.id_page
                 FROM $table_groupsPages gp 
-                WHERE gp.exc_read = '1';";
+                WHERE gp.$accessType;";
   	}
 
   	$results = $wpdb->get_results( $query );
 
+    
   	$exclude ="";
   	if(isset($results) && $results!="" && count($results)>0){
 
@@ -1443,7 +1476,9 @@ Groups with edit access</h3>
   	//if_:
   	// the post is a page
   	// the user has read access
-  	if($post->post_status == "static" && !$this->hasReadPageAccess($post->ID)){//nao tem acesso
+  	if(($post->post_status == "static" /* for wordpress < 2.1 */
+      || $post->post_type == "page") /* for wordpress < 2.1 */
+      && !$this->hasReadPageAccess($post->ID)){//nao tem acesso
   		$content = "<h2>You don't have access to this content</h2>";
   	}
   	return $content;

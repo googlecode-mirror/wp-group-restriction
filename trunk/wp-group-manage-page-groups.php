@@ -22,9 +22,9 @@ function userGroups_PrintPagesWithGroups($level=0, $parentID=0, $alt=true){
   $groups = new userGroups();
   global $wpdb;
   
-  
+  //added «OR post_type='page'» for wordpress 2.1 compatibility
   $results = $wpdb->get_results("SELECT * FROM ".$wpdb->posts. 
-                  " WHERE post_status='static' AND post_parent='$parentID';");
+                  " WHERE (post_status='static' OR post_type='page') AND post_parent='$parentID';");
   
   
   if(isset($results))
@@ -103,7 +103,7 @@ switch($mode){
       
     
       
-      echo "<h2>Edit Pages Access for '".get_the_title($pageID)."'</h2>";
+      echo "<h2>Edit Groups Access for '".get_the_title($pageID)."'</h2>";
        
       echo '<form id="readWrite" name="readWrite" action="'.$_SERVER['PHP_SELF'].'?page=wp-group-restriction/manage_groups&amp;mode=update&amp;id='.$pageID.'" method="post">';
       echo '<script type="text/javascript"><!--
