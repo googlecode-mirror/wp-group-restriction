@@ -125,6 +125,5 @@ Access "Users > Authors & Users" and edit a user to add or remove users from a g
 
 While editing or creating a page, the user can choose the groups with access to the page, by checking/unchecking the groups after the page edit panel.
 
-Keep in mind that both the administrators and the author can edit the page.
-
+Keep in mind that both the administrators and the author can read the page.
 
