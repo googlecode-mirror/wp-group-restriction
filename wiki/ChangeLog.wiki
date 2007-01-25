@@ -2,6 +2,12 @@
 #labels Featured
 
 == Change Log ==
+===January 25th, 2007===
+ * Support for Wordpress 2.1
+ * Wordpress 2.1 no longer needs a hack to filter pages from the back-office
+ * Fixed bug in editing a group
+ * Changed table creation statements (thanks to chris.hearn01)
+ * Updated readMe to new version
 ===January 19th, 2007===
  * Fixed layout problem in the Users edit page in the Admin.
  * Changed used variable to get user level (to a variable independent of the wordpress tables prefix).
