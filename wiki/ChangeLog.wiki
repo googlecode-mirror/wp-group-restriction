@@ -9,6 +9,5 @@
  * Changed table creation statements (thanks to chris.hearn01)
  * Updated readMe to new version
 ===January 19th, 2007===
- * Fixed layout problem in the Users edit page in the Admin.
- * Changed used variable to get user level (to a variable independent of the wordpress tables prefix).
-
+ * Fixed layout problem in the Users edit page in the Admin
+ * Changed used variable to get user level (to a variable independent of the Wordpress tables prefix)
