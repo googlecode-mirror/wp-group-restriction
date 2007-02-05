@@ -66,9 +66,17 @@ switch($mode){
 <h2><?php _e('Existing Groups'); 
 
 if($mode!="edit"){?> (<a href="#new">add new</a>)<?php } ?></h2>
+<?php
+    $groups = new userGroups();
+    
+    $results = $groups->getGroups(true);
+    
+    $i = 0;
+    if(isset($results) && count($results)>0) {
+?>
+
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
-	<tr>
-		<th width="4%"><?php _e('ID'); ?></th>
+	<tr class="thead">
 		<th width="40%"><?php _e('Group Name'); ?></th>
 		<th width="40%"><?php _e('HomePage'); ?></th>
     <th>&nbsp;</th>	
@@ -76,12 +84,7 @@ if($mode!="edit"){?> (<a href="#new">add new</a>)<?php } ?></h2>
 	</tr>
 	
 	<?php
-    $groups = new userGroups();
-    
-    $results = $groups->getGroups();
-    
-    $i = 0;
-    if(isset($results))
+
     foreach ($results as $result) {
       if($i%2 == 0) {
       	$style = 'class=\'alternate\'';
@@ -90,7 +93,6 @@ if($mode!="edit"){?> (<a href="#new">add new</a>)<?php } ?></h2>
       }
 	 ?>
 	 <tr <?php echo $style; ?>>
-		<td><?php echo $result->id; ?></td>
 		<td><?php echo $result->name; ?></td>
 		<td><?php 
     
@@ -117,6 +119,12 @@ if($mode!="edit"){?> (<a href="#new">add new</a>)<?php } ?></h2>
 	?>
 	
   </table>
+<? 
+    }//close if(isset($results) && count($results)>0)
+    else{
+    	echo "<p><strong>No groups available.</strong></p>";
+    }
+?>
 </div>
 <?php
 if($mode!="edit"){

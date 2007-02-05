@@ -5,7 +5,7 @@
  Plugin URI: #
  Description: Allows to define groups of users and their access to Edit and View Pages.
  Author: Tiago Pocinho, Siemens Networks, S.A.
- Version: 0.9 Beta
+ Version: 1.0 RC1
  */
 
 class userGroups {
@@ -140,8 +140,8 @@ Groups with read access</h3>
 <div
 	style="margin-left: 8px;	background: url(images/box-bg-right.gif) repeat-y right;	padding: 10px 10px 27px 0px;">
 	<?php
-	if(isset($groups)){
-		foreach ($groups as $result) {
+	if(isset($groups) && count($groups)>0){
+		/*foreach ($groups as $result) {
 			if($result->id_page != ""){
 				$checked = "checked";
 			}else{
@@ -151,9 +151,57 @@ Groups with read access</h3>
                     '<input type="checkbox" name="group[' . $result->id . ']" id="group-' . $result->id . '" ' . $checked . '/>&nbsp;'
                     . $result->name . '</label></div>';
 		}
+		echo '<input type="hidden" name="editgroups" value="true" />';*/
+		echo '<script type="text/javascript"><!--
+      
+	      function select_all(name, value) {
+	        formblock = document.getElementById("post");
+	        forminputs = formblock.getElementsByTagName("input");
+	        for (i = 0; i < forminputs.length; i++) {
+	          // regex here to check name attribute
+	          var regex = new RegExp(name, "i");
+	          if (regex.test(forminputs[i].getAttribute("name"))) {
+	            forminputs[i].checked = value;
+	          }
+	        }
+	      }
+      //--></script>';
+		echo "<table id='the-list-x' style='width:100%;'>";
+		echo "<tr class=\"thead\"><th rowspan='2'>Group</th><th colspan='2'>Access</th></tr>";
+		echo "<tr class=\"thead\"><th style='width:7em'>Read</th><th style='width:7em'>Write</th></tr>";
+		$alt = false;
+		foreach ($groups as $result) {
+			if($alt) {
+		      	$style = 'class=\'alternate\'';
+		    }  else {
+		      	$style = '';
+		    }
+		    $alt = !$alt;
+			if($result->exc_read != ""){
+				$canRead = "checked";
+			}else{
+				$canRead = "";
+			}
+			if($result->exc_write != ""){
+				$canWrite = "checked";
+			}else{
+				$canWrite = "";
+			}
+			echo "<tr $style><td>".$result->name. "</td>\n".
+				"<td style=\"text-align:center\"><input type=\"checkbox\" name=\"groupRead[]\"  value=\"". $result->id ."\" id=\"groupRead-" . $result->id . "\" " . $canRead . "/></td>\n".
+				"<td style=\"text-align:center\"><input type=\"checkbox\" name=\"groupWrite[]\" value=\"". $result->id ."\" id=\"groupWrite-" . $result->id . "\" " . $canWrite . "/></td>\n</tr>\n";
+		}
+		echo "<td scope='col'>&nbsp;</td>";
+		echo "<td scope='col' style='text-align:center;'>".
+        "<a href='#' onclick='select_all(\"groupRead\", true);'>All</a>".
+        " / <a href='#' onclick='select_all(\"groupRead\", false);'>None</a></td>";
+        echo "<td scope='col' style='text-align:center;'>".
+        "<a href='#' onclick='select_all(\"groupWrite\", true);'>All</a>".
+        " / <a href='#' onclick='select_all(\"groupWrite\", false);'>None</a></td>";
+		echo "</table>";
 		echo '<input type="hidden" name="editgroups" value="true" />';
 	} else
-	echo "No user groups defined.";
+		echo "No user groups defined.";
 	?>
 
 </div>
@@ -173,21 +221,54 @@ Groups with read access</h3>
 
   	$vargs = func_get_args();
   	$post_ID = $vargs[0];
-
+  	
+  	
+  	$readable = array();
+    $writeable = array();
+    $groups = array();
+    
+    if(isset($_POST['groupRead']))
+      foreach($_POST['groupRead'] as $id){
+        $readable[$id]=1;
+        $writeable[$id]=0;
+        $groups[] =$id;
+      }
+    if(isset($_POST['groupWrite']))
+      foreach($_POST['groupWrite'] as $id){
+        if(!isset($readable[$id])){
+          $readable[$id]=0;
+          $groups[] =$id;
+        }
+        $writeable[$id]=1;
+      }
+    
+    array_unique($groups);
+    /*echo "<pre>";
+    echo "Pages: \n";
+    print_r($pages);
+    echo "Readable: \n";
+    print_r($readable);
+    echo "Writable: \n";
+    print_r($writeable);
+    echo "ID: \n";
+    print_r($post_ID);
+    echo "</pre>";*/
+    $this->setPageGroups($groups,$readable,$writeable,$post_ID);
+	/*
   	$groups = $this->getAllGroupsWithPage($post_ID);
   	$newGroups = $_POST['group'];
   	if(isset($groups)){
   		foreach ($groups as $result) {
   			if(isset($newGroups[$result->id]) && !isset($result->id_page)){
-  				//add grup-page relation
+  				//add group-page relation
   				$this->setGroupPage($post_ID,$result->id,true,false);
   			}
   			if(!isset($newGroups[$result->id]) && isset($result->id_page)){
-  				//remove grup-page relation
+  				//remove group-page relation
   				$this->deleteGroupPage($result->id, $post_ID);
   			}
   		}
-  	}
+  	}*/
   }
   
   /**
@@ -320,14 +401,12 @@ Groups with read access</h3>
 
     
     echo "<br style='clear:both;'/><h3>User Groups </h3>";
-
   	if(isset($groups)){
-  	  if($read && count($groups)==0){
-				echo "<div>The user is not associated with groups.</div>";
-			}
+			$hasGroup = false;
   		foreach ($groups as $result) {
   			if($read){
   				if($result->id_user == $userId){
+  				  $hasGroup = true;
   					echo "<div>$result->name</div>";
   				}
   			}else{
@@ -344,6 +423,9 @@ Groups with read access</h3>
                '</label></div>';
   			}
   		}
+  		if($read && (count($groups)==0 || !$hasGroup)){
+				echo "<div>The user is not a member of any group.</div>";
+			}
   		echo '<input type="hidden" name="editgroups" value="true" />';
   	} else
   	echo "No user groups defined.";
@@ -739,7 +821,7 @@ Groups with read access</h3>
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsPage = $table_prefix . "ug_GroupsPage";
-    //added �OR p.post_type='page'� for wordpress 2.1 compatibility
+    //added "OR p.post_type='page'" for wordpress 2.1 compatibility
   	$query = "Select * from $table_pages p
               INNER JOIN ($table_groupsPage gp )
               ON ((p.post_status='static' OR p.post_type='page') and gp.id_page = p.ID 
@@ -993,6 +1075,22 @@ Groups with read access</h3>
 
   	$results = $wpdb->get_results( $query );
   	return $results;
+  }
+  
+/**
+   * Gets the number of groups available
+   * 
+   * @return int number os groups
+   **/     
+  function getGroupsCount() {
+  	global $table_prefix, $wpdb;
+  	
+  	$table_groups = $table_prefix . "ug_Groups";
+
+  	$query = 'SELECT Count(*) FROM '.$table_groups.';';
+
+  	$result = $wpdb->get_var( $query );
+  	return $result;
   }
   
   /**
