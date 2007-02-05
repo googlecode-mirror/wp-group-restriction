@@ -72,30 +72,6 @@ function userGroups_PrintPagesWithGroups($level=0, $parentID=0, $alt=true){
 }
 
 switch($mode){
-  case "update":
-    //colocar p�ginas com o id na lista na tabela de rela��o
-    //retirar as outras
-    
-    //merge the two access arrays
-    $readable = array();
-    $writeable = array();
-    $groupsList = array();
-    
-    if(isset($_POST['groups_read']))
-      foreach($_POST['groups_read'] as $id){
-        $readable[$id]=1;
-        $writeable[$id]=0;
-        $groupsList[] =$id;
-      }
-    if(isset($_POST['groups_write']))
-      foreach($_POST['groups_write'] as $id){
-        if(!isset($readable[$id])){
-          $readable[$id]=0;
-          $groupsList[] =$id;
-        }
-        $writeable[$id]=1;
-      }
-    $groups->setPageGroups($groupsList,$readable,$writeable,$_REQUEST['id']);
   case "edit":
     if(isset($_REQUEST['id'])){
       $pageID = $_REQUEST['id'];
@@ -120,61 +96,66 @@ switch($mode){
         }
       }
       //--></script>';
-      $pageGroups = $groups->getAllGroupsWithPage($pageID);
-      
-      
-      if(isset($pageGroups)){
-        echo "<table id='the-list-x' width='100%' cellpadding='3' cellspacing='3'>";
-        echo "<tr>";
-        echo "<th scope='col' rowspan='2'>Page</th>";
-        echo "<th scope='col' colspan='3'>Exclusive</th>";
-        echo "</tr>";
-        echo "<tr>";
-        echo "<th scope='col' style='width:7em'>Read</th>";
-        echo "<th scope='col' style='width:7em'>Write</th>";
-        echo "</tr>";
-        $alt = true;
-        
-        //print groups!!!
-        
-        foreach($pageGroups as $group){
-          if($alt) {
-          	$style = 'class=\'alternate\'';
-          }  else {
-          	$style = '';
-          }
-          $alt = !$alt;
-          
-          echo "<tr $style>";
-          echo "<td>".$group->name."</td>";
-          $checked = "";
-          
-          if($group->exc_read)
-            $checked = " checked ";
-          echo "<td  style='text-align:center;'><input type='checkbox' name='groups_read[]' value='".$group->id."' $checked/></td>";
-          $checked = "";
-          if($group->exc_write)
-            $checked = " checked ";
-          echo "<td  style='text-align:center;'><input type='checkbox' name='groups_write[]' value='".$group->id."' $checked/></td>";
-          echo "</tr>";
-        }
-        
-        echo "<tr>";
-        echo "<td>&nbsp;</td>";
-        echo "<td scope='col' style='text-align:center;'>".
-        "<a href='#' onclick='select_all(\"groups_read\", true);'>All</a>".
-        " / <a href='#' onclick='select_all(\"groups_read\", false);'>None</a></td>";
-        echo "<td scope='col' style='text-align:center;'>".
-        "<a href='#' onclick='select_all(\"groups_write\", true);'>All</a>".
-        " / <a href='#' onclick='select_all(\"groups_write\", false);'>None</a></td>";
-        //echo "<td><input type='checkbox' id='allRead' onclick='select_all(\"groups_read\", this.checked)'/><label for='allRead'>All/None</label></td>";
-        //echo "<td><input type='checkbox' id='allWrite' onclick='select_all(\"groups_write\", this.checked)'/><label for='allWrite'>All/None</label></td>";
-        echo "</tr>";
-        echo "</table>";
-        echo "<hr /><b>Note:</b> If a page has exclusive read, only users with no group or belonging ";
-        echo "to a group with read access will be able to read the pages.<br />";
-        echo "The same concept applies to exclusive write. However, if a page is only locked to ";
-        echo "write, others can still read it.";
+      $count = $groups->getGroupsCount();
+      if($count > 0){
+	      $pageGroups = $groups->getAllGroupsWithPage($pageID);
+	      
+	      
+	      if(isset($pageGroups)){
+	        echo "<table id='the-list-x' width='100%' cellpadding='3' cellspacing='3'>";
+	        echo "<tr class=\"thead\">";
+	        echo "<th scope='col' rowspan='2'>Page</th>";
+	        echo "<th scope='col' colspan='3'>Exclusive</th>";
+	        echo "</tr>";
+	        echo "<tr class=\"thead\">";
+	        echo "<th scope='col' style='width:7em'>Read</th>";
+	        echo "<th scope='col' style='width:7em'>Write</th>";
+	        echo "</tr>";
+	        $alt = true;
+	        
+	        //print groups!!!
+	        
+	        foreach($pageGroups as $group){
+	          if($alt) {
+	          	$style = 'class=\'alternate\'';
+	          }  else {
+	          	$style = '';
+	          }
+	          $alt = !$alt;
+	          
+	          echo "<tr $style>";
+	          echo "<td>".$group->name."</td>";
+	          $checked = "";
+	          
+	          if($group->exc_read)
+	            $checked = " checked ";
+	          echo "<td  style='text-align:center;'><input type='checkbox' name='groups_read[]' value='".$group->id."' $checked/></td>";
+	          $checked = "";
+	          if($group->exc_write)
+	            $checked = " checked ";
+	          echo "<td  style='text-align:center;'><input type='checkbox' name='groups_write[]' value='".$group->id."' $checked/></td>";
+	          echo "</tr>";
+	        }
+	        
+	        echo "<tr>";
+	        echo "<td>&nbsp;</td>";
+	        echo "<td scope='col' style='text-align:center;'>".
+	        "<a href='#' onclick='select_all(\"groups_read\", true);'>All</a>".
+	        " / <a href='#' onclick='select_all(\"groups_read\", false);'>None</a></td>";
+	        echo "<td scope='col' style='text-align:center;'>".
+	        "<a href='#' onclick='select_all(\"groups_write\", true);'>All</a>".
+	        " / <a href='#' onclick='select_all(\"groups_write\", false);'>None</a></td>";
+	        //echo "<td><input type='checkbox' id='allRead' onclick='select_all(\"groups_read\", this.checked)'/><label for='allRead'>All/None</label></td>";
+	        //echo "<td><input type='checkbox' id='allWrite' onclick='select_all(\"groups_write\", this.checked)'/><label for='allWrite'>All/None</label></td>";
+	        echo "</tr>";
+	        echo "</table>";
+	        echo "<hr /><b>Note:</b> If a page has exclusive read, only users belonging ";
+	        echo "to a group with read access will be able to read the pages.<br />";
+	        echo "The same concept applies to exclusive write. However, if a page is only locked to ";
+	        echo "write, others can still read it.";
+	      }
+      }else{
+	      echo "<p><strong>No groups available.</strong> <a href=\"?page=wp-group-restriction/wp-group-restriction.php#new\">(create a new group)</a></p>";
       }
       ?>
       <br />
@@ -187,12 +168,36 @@ switch($mode){
   
   
     break;
+  case "update":
+    //colocar paginas com o id na lista na tabela de relacao
+    //retirar as outras
+    
+    //merge the two access arrays
+    $readable = array();
+    $writeable = array();
+    $groupsList = array();
+    
+    if(isset($_POST['groups_read']))
+      foreach($_POST['groups_read'] as $id){
+        $readable[$id]=1;
+        $writeable[$id]=0;
+        $groupsList[] =$id;
+      }
+    if(isset($_POST['groups_write']))
+      foreach($_POST['groups_write'] as $id){
+        if(!isset($readable[$id])){
+          $readable[$id]=0;
+          $groupsList[] =$id;
+        }
+        $writeable[$id]=1;
+      }
+    $groups->setPageGroups($groupsList,$readable,$writeable,$_REQUEST['id']);
   default:
 ?>
 
 <h2><?php _e('Pages detailed access'); ?></h2>
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
-	<tr>
+	<tr class="thead">
 		<th><?php _e('Page Title'); ?></th>
 		<th><?php _e('Groups'); ?></th>
     <th>&nbsp;</th>

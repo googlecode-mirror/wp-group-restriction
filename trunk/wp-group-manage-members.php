@@ -23,38 +23,49 @@ function userGroups_PrintGroupMembers(){
 	$groups = new userGroups();
 
 	$results = $groups->getGroups();
-
+	
 	$alt = true;
-	if(isset($results))
-	foreach ($results as $result) {
-		if($alt) {
-			$style = 'class=\'alternate\'';
-		}  else {
-			$style = '';
-		}
-		$alt = !$alt;
-
-		echo "<tr ".$style."><td>".$result->name."</td><td>";
-
-		$members = $groups->getGroupMembers($result->id);
-
-		if(isset($members) && count($members) > 0){
-			
-			$number = count($members);
-			if($number == 1)
-			echo "<b>1 user:</b><br />";
-			else
-			echo "<b>$number users:</b><br />";
-
-			foreach ($members as $member) {
-				echo "- ".$member->name. "<br />";
+	
+	if(isset($results) && count($results)>0){
+		echo "\n<table width=\"100%\" border=\"0\" cellspacing=\"3\" cellpadding=\"3\">";
+		echo "\n\t<tr class=\"thead\">";
+		echo "\n\t\t<th>Group Name</th>\n\t\t<th>Members</th>\n\t\t<th>&nbsp;</th>";
+		echo "\n\t</tr>";
+		
+		foreach ($results as $result) {
+			if($alt) {
+				$style = 'class=\'alternate\'';
+			}  else {
+				$style = '';
 			}
-		}else{
-			echo "<b>No users</b>";
+			$alt = !$alt;
+	
+			echo "<tr ".$style."><td>".$result->name."</td><td>";
+	
+			$members = $groups->getGroupMembers($result->id);
+	
+			if(isset($members) && count($members) > 0){
+				
+				$number = count($members);
+				if($number == 1)
+				echo "<b>1 user:</b><br />";
+				else
+				echo "<b>$number users:</b><br />";
+	
+				foreach ($members as $member) {
+					echo "- ".$member->name. "<br />";
+				}
+			}else{
+				echo "<b>No users</b>";
+			}
+			echo "</td><td ".$style."><a class=\"edit\"  href='".$_SERVER['PHP_SELF'].
+	        "?page=wp-group-restriction/group_members&amp;mode=edit&amp;id="
+	        .$result->id."'>Edit</a></td></tr>";
 		}
-		echo "</td><td ".$style."><a class=\"edit\"  href='".$_SERVER['PHP_SELF'].
-        "?page=wp-group-restriction/group_members&amp;mode=edit&amp;id="
-        .$result->id."'>Edit</a></td></tr>";
+		echo "\n</table>";
+	}else{
+		//No groups available...
+		echo "<p><strong>No groups available.</strong></p>";
 	}
 }
 
@@ -118,17 +129,8 @@ switch($mode){
 	default:
 		?>
 
-<h2><?php _e('Groups Members'); ?></h2>
-<table width="100%" border="0" cellspacing="3" cellpadding="3">
-	<tr>
-		<th><?php _e('Group Name'); ?></th>
-		<th><?php _e('Members'); ?></th>
-		<th>&nbsp;</th>
-	</tr>
-	<?php
-	userGroups_PrintGroupMembers();
-	?>
-</table>
+<h2>Groups Members</h2>
 <?php
+	userGroups_PrintGroupMembers();
 }
 ?></div>

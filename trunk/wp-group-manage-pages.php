@@ -4,7 +4,7 @@ $groups = new userGroups();
 $mode = $_REQUEST['mode'];
 
 if($mode == "update"){
-  $groups->write("Group pages updated");
+  	$groups->write("Pages for group '".$_REQUEST['groupName']."' updated.");
 }
 
 
@@ -55,8 +55,72 @@ function pagesByParent($paginas,&$alt, $groups, $group_id, $level = 0){
 }
 
 switch($mode){
-  case "update":
+  case "edit":
+    if(isset($_REQUEST['id'])){
+      $group = $groups->getGroup($_REQUEST['id']);
+      $paginas = $groups->getAllPagesWithGroup($group->id);
     
+      
+      echo "<h2>Edit Pages Access for '".$group->name."'</h2>";
+       
+      echo '<form id="readWrite" name="readWrite" action="'.$_SERVER['PHP_SELF'].'?page=wp-group-restriction/manage_pages&amp;mode=update&amp;id='.$group->id.'" method="post">';
+      echo "<input type=\"hidden\" name=\"groupName\" id=\"groupName\"  value=\"".$group->name."\" />";
+      echo '<script type="text/javascript"><!--
+      
+      function select_all(name, value) {
+        formblock = document.getElementById("readWrite");
+        forminputs = formblock.getElementsByTagName("input");
+        for (i = 0; i < forminputs.length; i++) {
+          // regex here to check name attribute
+          var regex = new RegExp(name, "i");
+          if (regex.test(forminputs[i].getAttribute("name"))) {
+            forminputs[i].checked = value;
+          }
+        }
+      }
+      //--></script>';
+      $paginas = $groups->getAllMainPagesWithGroup($group->id);
+      
+      
+      if(isset($paginas)){
+        echo "<table id='the-list-x' width='100%' cellpadding='3' cellspacing='3'>";
+        echo "<tr class=\"thead\">";
+        echo "<th scope='col' rowspan='2'>Page</th>";
+        echo "<th scope='col' colspan='3'>Exclusive</th>";
+        echo "</tr>";
+        echo "<tr class=\"thead\">";
+        echo "<th scope='col' style='width:7em'>Read</th>";
+        echo "<th scope='col' style='width:7em'>Write</th>";
+        echo "</tr>";
+        $alt = true;
+        print pagesByParent($paginas, &$alt, $groups, $group->id);
+        echo "<tr >";
+        echo "<td scope='col'>&nbsp;</td>";
+        echo "<td scope='col' style='text-align:center;'>".
+        "<a href='#' onclick='select_all(\"pages_read\", true);'>All</a>".
+        " / <a href='#' onclick='select_all(\"pages_read\", false);'>None</a></td>";
+        echo "<td scope='col' style='text-align:center;'>".
+        "<a href='#' onclick='select_all(\"pages_write\", true);'>All</a>".
+        " / <a href='#' onclick='select_all(\"pages_write\", false);'>None</a></td>";
+  		echo "</tr>";
+        echo "</table>";
+        echo "<hr /><b>Note:</b> If a page has exclusive read, only users belonging ";
+        echo "to a group with read access will be able to read the pages.<br />";
+        echo "The same concept applies to exclusive write. However, if a page is only locked to ";
+        echo "write, others can still read it.";
+      }
+      ?>
+      <br />
+      <div class="submit"><input  type="submit" value="Update &raquo;" /></div>
+     </form>
+      
+      <?php
+    }
+
+  
+  
+    break;
+  case "update":
     //merge the two access arrays
     $readable = array();
     $writeable = array();
@@ -79,76 +143,12 @@ switch($mode){
     
     
     $groups->setGroupPages($pages,$readable,$writeable,$_REQUEST['id']);
-  case "edit":
-    if(isset($_REQUEST['id'])){
-      $group = $groups->getGroup($_REQUEST['id']);
-      $paginas = $groups->getAllPagesWithGroup($group->id);
-    
-      
-      echo "<h2>Edit Pages Access for '".$group->name."'</h2>";
-       
-      echo '<form id="readWrite" name="readWrite" action="'.$_SERVER['PHP_SELF'].'?page=wp-group-restriction/manage_pages&amp;mode=update&amp;id='.$group->id.'" method="post">';
-      echo '<script type="text/javascript"><!--
-      
-      function select_all(name, value) {
-        formblock = document.getElementById("readWrite");
-        forminputs = formblock.getElementsByTagName("input");
-        for (i = 0; i < forminputs.length; i++) {
-          // regex here to check name attribute
-          var regex = new RegExp(name, "i");
-          if (regex.test(forminputs[i].getAttribute("name"))) {
-            forminputs[i].checked = value;
-          }
-        }
-      }
-      //--></script>';
-      $paginas = $groups->getAllMainPagesWithGroup($group->id);
-      
-      
-      if(isset($paginas)){
-        echo "<table id='the-list-x' width='100%' cellpadding='3' cellspacing='3'>";
-        echo "<tr>";
-        echo "<th scope='col' rowspan='2'>Page</th>";
-        echo "<th scope='col' colspan='3'>Exclusive</th>";
-        echo "</tr>";
-        echo "<tr>";
-        echo "<th scope='col' style='width:7em'>Read</th>";
-        echo "<th scope='col' style='width:7em'>Write</th>";
-        echo "</tr>";
-        $alt = true;
-        print pagesByParent($paginas, &$alt, $groups, $group->id);
-        echo "<tr >";
-        echo "<td scope='col'>&nbsp;</td>";
-        echo "<td scope='col' style='text-align:center;'>".
-        "<a href='#' onclick='select_all(\"pages_read\", true);'>All</a>".
-        " / <a href='#' onclick='select_all(\"pages_read\", false);'>None</a></td>";
-        echo "<td scope='col' style='text-align:center;'>".
-        "<a href='#' onclick='select_all(\"pages_write\", true);'>All</a>".
-        " / <a href='#' onclick='select_all(\"pages_write\", false);'>None</a></td>";
-  		echo "</tr>";
-        echo "</table>";
-        echo "<hr /><b>Note:</b> If a page has exclusive read, only users with no group or belonging ";
-        echo "to a group with read access will be able to read the pages.<br />";
-        echo "The same concept applies to exclusive write. However, if a page is only locked to ";
-        echo "write, others can still read it.";
-      }
-      ?>
-      <br />
-      <div class="submit"><input  type="submit" value="Update &raquo;" /></div>
-     </form>
-      
-      <?php
-    }
-
-  
-  
-    break;
   default:
 ?>
 
 <h2><?php _e('Group Pages'); ?></h2>
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
-	<tr>
+	<tr class="thead">
 		<th><?php _e('Group Name'); ?></th>
 		<th><?php _e('Pages'); ?></th>
     <th>&nbsp;</th>	
