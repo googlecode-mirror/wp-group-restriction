@@ -1,4 +1,10 @@
 <?php
+/****************************************************************
+ * This File loads the "Groups -> Access per Page" Tab.
+ * It allows to manage the groups with access to every page.
+ * The information is presented from a Page Point of View. 
+ ***************************************************************/ 
+  
 $groups = new userGroups();
 
 $mode = $_REQUEST['mode'];
@@ -145,8 +151,6 @@ switch($mode){
 	        echo "<td scope='col' style='text-align:center;'>".
 	        "<a href='#' onclick='select_all(\"groups_write\", true);'>All</a>".
 	        " / <a href='#' onclick='select_all(\"groups_write\", false);'>None</a></td>";
-	        //echo "<td><input type='checkbox' id='allRead' onclick='select_all(\"groups_read\", this.checked)'/><label for='allRead'>All/None</label></td>";
-	        //echo "<td><input type='checkbox' id='allWrite' onclick='select_all(\"groups_write\", this.checked)'/><label for='allWrite'>All/None</label></td>";
 	        echo "</tr>";
 	        echo "</table>";
 	        echo "<hr /><b>Note:</b> If a page has exclusive read, only users belonging ";
@@ -169,9 +173,6 @@ switch($mode){
   
     break;
   case "update":
-    //colocar paginas com o id na lista na tabela de relacao
-    //retirar as outras
-    
     //merge the two access arrays
     $readable = array();
     $writeable = array();
@@ -203,11 +204,7 @@ switch($mode){
     <th>&nbsp;</th>
 	</tr>
 	
-	<?php
-    
-    userGroups_PrintPagesWithGroups();
-    
-      ?>
+	<?php userGroups_PrintPagesWithGroups(); ?>
 
   </table>
 <?php

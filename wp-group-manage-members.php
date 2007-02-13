@@ -1,4 +1,9 @@
 <?php
+/****************************************************
+ * This File loads the Groups -> Members Tab
+ * It allows to manage the groups members (users) 
+ ****************************************************/ 
+
 $groups = new userGroups();
 
 $mode = $_REQUEST['mode'];

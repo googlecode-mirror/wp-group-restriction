@@ -47,7 +47,7 @@ class userGroups {
   }
   
   /**
-   * removes read restricted pages from the search results
+   * Removes read restricted pages from the search results
    * 
    * @param string $where SQL query from wordpress search
    * @return string updated query with pages to exclude
@@ -70,7 +70,7 @@ class userGroups {
   }
   
   /**
-   * removes write restricted pages from the backoffice
+   * Removes write restricted pages from the backoffice
    * 
    * @param string $where SQL query from wordpress search
    * @return string updated query with pages to exclude
@@ -93,7 +93,9 @@ class userGroups {
   }
   
   /**
-   * returns conditions to exclude children from a page in a SLQ statement
+   * Get pages to exclude based on the parent
+   *    
+   * @param int $parentID Page identifier   
    * @return string children to be excluded
    */
   function exclude_children($parentID){
@@ -1640,7 +1642,7 @@ Groups with read access</h3>
 
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsGeneric = $table_prefix . "ug_GroupsGeneric";
-
+    $table_groupsUsers = $table_prefix . "ug_GroupsUsers";
   	if($permission != "" && $resource != "" && $user!="" && $plugin_name != ""){
   		$query = "SELECT COUNT(*) FROM $table_groupsGeneric tgg
                   WHERE tgg.plugin_name = '$plugin_name' AND tgg.id_resource = '$resource';";
