@@ -1,4 +1,10 @@
 <?php
+/************************************************************
+ * This File loads the "Groups -> Pages" Tab
+ * It allows to manage the groups' access to pages.
+ * The information is presented from a Group Point of View. 
+ ************************************************************/
+ 
 $groups = new userGroups();
 
 $mode = $_REQUEST['mode'];

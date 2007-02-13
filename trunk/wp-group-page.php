@@ -1,4 +1,9 @@
 <?php
+/*************************************************************
+ * This File loads the "Groups -> Groups" Tab
+ * It allows to manage Groups by editing, adding or deleting
+ ************************************************************/ 
+  
 $groups = new userGroups();
 
 $mode = $_REQUEST['mode'];
