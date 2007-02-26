@@ -75,13 +75,6 @@ function userGroups_PrintGroupMembers(){
 }
 
 switch($mode){
-	case "update":
-		//update groups members
-		if($_REQUEST['id']!= ""){
-			$groups->deleteAllGroupUser($_REQUEST['id']);
-			$groups->createGroupWithUsers($_REQUEST['id'],$_POST['users']);
-		}
-
 	case "edit":
 		if(isset($_REQUEST['id'])){
 			$groupID = $_REQUEST['id'];
@@ -131,6 +124,12 @@ switch($mode){
 		}
 		
 		break;
+	case "update":
+		//update groups members
+		if($_REQUEST['id']!= ""){
+			$groups->deleteAllGroupUser($_REQUEST['id']);
+			$groups->createGroupWithUsers($_REQUEST['id'],$_POST['users']);
+		}
 	default:
 		?>
 

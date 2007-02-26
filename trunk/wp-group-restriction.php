@@ -2,7 +2,7 @@
 
 /*
  Plugin Name: Group Restriction
- Plugin URI: #
+ Plugin URI: http://code.google.com/p/wp-group-restriction/
  Description: Allows to define groups of users and their access to Edit and View Pages.
  Author: Tiago Pocinho, Siemens Networks, S.A.
  Version: 1.0 RC1
@@ -10,9 +10,8 @@
 
 class userGroups {
   /**
-   * Constructor for the userGroups Class
-   * 
-   * Adds wordpress actions and filters      
+   * Constructor for the userGroups Class.
+   * Adds wordpress actions and filters.   
    **/     
   function userGroups(){
   	add_action('activate_wp-group-restriction/wp-group-restriction.php',array(&$this,'install'));
@@ -134,13 +133,13 @@ class userGroups {
 <div
 	style="margin: 5px 0px 0px -7px;background: #fff url(images/box-head-left.gif) no-repeat top left;">
 <h3 class="dbx-handle"
-	style="margin-left: 7px;	margin-bottom: -7px;padding: 6px 1em 0px 3px;	background: #2685af url(images/box-head-right.gif) no-repeat top right;">
+	style="margin-left: 7px; margin-bottom: -7px;padding: 6px 1em 0px 3px;	background: #2685af url(images/box-head-right.gif) no-repeat top right;">
 Groups with read access</h3>
 </div>
 <div
 	style="margin-left: 10px;margin-right: 0px;background: url(images/box-bg-left.gif) repeat-y left;">
 <div
-	style="margin-left: 8px;	background: url(images/box-bg-right.gif) repeat-y right;	padding: 10px 10px 27px 0px;">
+	style="margin-left: 8px; background: url(images/box-bg-right.gif) repeat-y right; padding: 10px 10px 27px 0px;">
 	<?php
 	if(isset($groups) && count($groups)>0){
 		/*foreach ($groups as $result) {
@@ -245,32 +244,9 @@ Groups with read access</h3>
       }
     
     array_unique($groups);
-    /*echo "<pre>";
-    echo "Pages: \n";
-    print_r($pages);
-    echo "Readable: \n";
-    print_r($readable);
-    echo "Writable: \n";
-    print_r($writeable);
-    echo "ID: \n";
-    print_r($post_ID);
-    echo "</pre>";*/
+   
     $this->setPageGroups($groups,$readable,$writeable,$post_ID);
-	/*
-  	$groups = $this->getAllGroupsWithPage($post_ID);
-  	$newGroups = $_POST['group'];
-  	if(isset($groups)){
-  		foreach ($groups as $result) {
-  			if(isset($newGroups[$result->id]) && !isset($result->id_page)){
-  				//add group-page relation
-  				$this->setGroupPage($post_ID,$result->id,true,false);
-  			}
-  			if(!isset($newGroups[$result->id]) && isset($result->id_page)){
-  				//remove group-page relation
-  				$this->deleteGroupPage($result->id, $post_ID);
-  			}
-  		}
-  	}*/
+
   }
   
   /**
@@ -346,7 +322,6 @@ Groups with read access</h3>
    * @return array and empty array if no access is granted or the $allcals array ortherwise.
    **/
   function check_the_user_group() {
-  	//global $post, $current_user;
   	$vargs = func_get_args();
   	list($allcaps, $reqcaps, $args) = $vargs;
   	//gets the page ID
@@ -444,7 +419,7 @@ Groups with read access</h3>
   }
   
   /**
-   * updates the groups for the current user
+   * Updates the groups for the current user
    **/  
   function handle_own_groups_edit() {
   	$this->handle_user_groups_edit(true);
@@ -493,7 +468,7 @@ Groups with read access</h3>
   	/*wordpress tables*/
   	$table_users = $table_prefix . "users";
   	$table_categories = $table_prefix . "categories";
-  	$table_pages = $table_prefix . "posts"; //post_status must be static
+  	$table_pages = $table_prefix . "posts"; //post_status must be "static" or the post_type must be "page"
   	 
   	/*plugin tables*/
   	$table_groups = $table_prefix . "ug_Groups";
@@ -692,9 +667,7 @@ Groups with read access</h3>
   	 
   	$this->deleteAllGroupPages($groupID);
 
-
   	foreach($pages as $page) {
-  		//echo "Page: '".$page."' Group:'".$groupID."'";
   		$this->setGroupPage($page,$groupID, $readPageIDs[$page], $writePageIDs[$page]);
   	}
   }
@@ -722,7 +695,6 @@ Groups with read access</h3>
    *  @param int $groupID - group identifier
    *  @param boolean $read - read access
    *  @param boolean $read - write access
-   * 
    *  @return boolean True on success, false on error
    **/
   function setGroupPage ($pageID, $groupID, $read, $write){
@@ -838,7 +810,7 @@ Groups with read access</h3>
   /**
    * Gets all pages from a given group with read access
    * 
-   *  @param int $groupID - group identifier  
+   * @param int $groupID - group identifier  
    * @return array Query results  
    **/
   function getGroupPagesWithRead($groupId){
@@ -848,7 +820,7 @@ Groups with read access</h3>
   /**
    * Gets all pages from a given group with write access
    * 
-   *  @param int $groupID - group identifier     and gp.exc_write='1'
+   * @param int $groupID - group identifier     and gp.exc_write='1'
    * @return array Query results
    **/
   function getGroupPagesWithWrite($groupId){
@@ -858,6 +830,7 @@ Groups with read access</h3>
   
   /**
    * Gets all pages without a group
+   * 
    * @param string $criteria - criteria to use in the query
    * @return array Query results
    **/  
@@ -925,7 +898,6 @@ Groups with read access</h3>
               	ON (gp.id_page = p.ID $criteria )
               ) ORDER BY post_title;";
   	$results = $wpdb->get_results( $query );
-  	//echo "$query<br />here.... count(\$results) == ".count($results);
   	 
   	return (!(!isset($results) || count($results) == 0)) && $this->isParentFree($id_page,$criteria);
   }
@@ -1346,8 +1318,6 @@ Groups with read access</h3>
 
   	$table = $table_prefix . "ug_GroupsUsers";
 
-  	//print_r($users);
-
   	if(isset($users) && count($users)>0){
   		foreach($users as $user){
   			if (userGroups::tableExists($table)) {
@@ -1507,8 +1477,6 @@ Groups with read access</h3>
 
   	get_currentuserinfo();
 
-
-
   	//if is an administrator or the page has no groups
   	if ($user_level >= 8){
   		return "";
@@ -1526,7 +1494,7 @@ Groups with read access</h3>
   	$table_groups = $table_prefix . "ug_Groups";
 
   	if($user_ID!= ""){
-  	  //added �OR p.post_type='page'� for wordpress 2.1 compatibility
+  	  //added "OR p.post_type='page'" for wordpress 2.1 compatibility
   		$query = "SELECT DISTINCT id_page
                   FROM $table_groupsPages 
                   WHERE exc_read = '1'
@@ -1573,7 +1541,7 @@ Groups with read access</h3>
   function testContent($content){
   	global $post, $user_ID, $ug_contentBlocked;
 
-  	//if_:
+  	//if:
   	// the post is a page
   	// the user has read access
   	if(($post->post_status == "static" /* for wordpress < 2.1 */
@@ -1598,7 +1566,7 @@ Groups with read access</h3>
    * @param int $resource - resource identification
    * @param string $permission - name of the permission (if none is 
    * 		specified all plugin resources with all permissions are returned)
-   *  
+   * @return array The results or null if an error occurs; 
    **/     
   function ugGetGroupsOfPlugin($plugin_name, $resource="", $permission=""){
   	global $table_prefix, $wpdb;
@@ -1626,6 +1594,71 @@ Groups with read access</h3>
   	}
   }
   
+/**
+   * Gets the resources a user has not access
+   * To be used by other plugins
+   * 
+   * @param int $user_id - User identifier
+   * @param string $plugin_name - name of the plugin using this method
+   * @param string $permission - name of the permission (if none is 
+   * 		specified this restriction is ignored)
+   * @return array Restricted resources IDs in array
+   **/     
+  function ugGetRestrictedResources($user_id, $plugin_name, $permission=""){
+  	global $table_prefix, $wpdb, $user_level;
+	
+  	$excludes = array();
+  	
+  	get_currentuserinfo();
+  	
+  	//if is an administrator he has access to all resources
+  	if ($user_level >= 8){
+  		return $excludes;
+  	}
+  	
+  	$table_groups = $table_prefix . "ug_Groups";
+  	$table_groupsUsers = $table_prefix . "ug_GroupsUsers";
+  	$table_groupsGeneric = $table_prefix . "ug_GroupsGeneric";
+	
+  	$arg= "";
+  	if($plugin_name == ""){
+  		return array();
+  	}
+  	
+  	if($resource != ""){
+  		$arg .= "AND gg.id_resource='$resource' ";
+  	}
+
+  	if($user_id!= ""){
+  		$query = "SELECT DISTINCT id_resource
+                  FROM $table_groupsGeneric 
+                  WHERE id_resource NOT IN
+                      (SELECT gg.id_resource 
+                        FROM $table_groupsGeneric gg, $table_groups g, 
+                             $table_groupsUsers gu
+                        WHERE gg.id_group=g.id 
+                              AND gg.plugin_name = '$plugin_name' 
+							  AND g.id=gu.id_group 
+                              AND gu.id_user='$user_id' 
+                              $arg);";
+  	}else{
+  		$query = "SELECT DISTINCT id_resource
+                FROM $table_groupsGeneric gg 
+                WHERE gg.plugin_name = '$plugin_name' $arg;";
+  	}
+  	
+
+  	$results = $wpdb->get_results( $query );
+	
+  	if(isset($results) && $results!="" && count($results)>0){
+  		foreach ($results as $result){
+	  		$excludes[] = $result->id_resource;
+  		}
+  	}
+  	return $excludes;
+  	
+  }
+  
   /**
    * Checks if the user has privileges to access a content
    * To be used by other plugins
@@ -1634,22 +1667,30 @@ Groups with read access</h3>
    * @param int $resource - ID of the resource
    * @param string $permission - name of the permission 
    * @param string $plugin_name - name of the plugin using this method
-   * 
    * @return boolean Returns true is the user has access or no access for the resource is specified, false otherwise    
    **/     
   function ugHasAccess($user, $resource, $permission, $plugin_name){
-  	global $table_prefix, $wpdb;
+  	global $table_prefix, $wpdb, $user_level;
+  	
+  	if ($user_level >= 8){
+  		return true;
+  	}
 
   	$table_groups = $table_prefix . "ug_Groups";
   	$table_groupsGeneric = $table_prefix . "ug_GroupsGeneric";
     $table_groupsUsers = $table_prefix . "ug_GroupsUsers";
-  	if($permission != "" && $resource != "" && $user!="" && $plugin_name != ""){
+  	if($permission != "" && $resource != "" && $plugin_name != ""){
+  		
   		$query = "SELECT COUNT(*) FROM $table_groupsGeneric tgg
                   WHERE tgg.plugin_name = '$plugin_name' AND tgg.id_resource = '$resource';";
   		$results = $wpdb->get_var( $query );
   		if($results != "" && $results == 0)
   			return true; //if this happens means that the resource has no groups locking it
   		
+	  	if($user==""){//user is not logged in and the resourse has groups
+	  		return false;
+	  	}
+	  	
   		$query = "SELECT COUNT(*) FROM $table_groupsGeneric tgg, $table_groups tg,
                 $table_groupsUsers tgu
                 WHERE tgg.plugin_name = '$plugin_name' AND tgg.id_resource = '$resource' AND tgg.id_group=tg.id
@@ -1670,7 +1711,6 @@ Groups with read access</h3>
    * @param int $resource - ID of the resource
    * @param string $permission - name of the permission 
    * @param string $plugin_name - name of the plugin using this method
-   * 
    * @return array The row with the access to the resource (Contains description if available)    
    **/     
   function ugGetUserAccess($user, $resource, $permission, $plugin_name){
@@ -1699,7 +1739,6 @@ Groups with read access</h3>
    * @param string $permission - permission name
    * @param string $plugin_name - name of the plugin calling this method
    * @param string $description - description of the restriction
-   * 
    * @return boolean True after successful insert, false otherwise
    **/
   function ugSetAccess ($group, $resource, $permission, $plugin_name, $description){
@@ -1730,13 +1769,16 @@ Groups with read access</h3>
    * @param string $permission - permission name
    * @param string $plugin_name - name of the plugin calling this method
    * @param string $description - description of the restriction
+   * @return boolean True if every group access was set, false if one or more have failed
    **/
   function ugSetGroupsAccess ($groupsList, $resource, $permission, $plugin_name, $description){
-    //TODO test if parameters are valid and return success or error
+  	$retVal = true;
     userGroups::ugDeleteResource ($plugin_name, $resource, $permission);
     foreach($groupsList as $group){
-      userGroups::ugSetAccess ($group, $resource, $permission, $plugin_name, $description);
+      $bol = userGroups::ugSetAccess ($group, $resource, $permission, $plugin_name, $description);
+      $retVal = $bol && $retVal;
     }
+    return $retVal;
   }
   
   /**
@@ -1746,7 +1788,6 @@ Groups with read access</h3>
    * @param int $resource - resource identifier (optional parameter, if not specified this creteria will not be considered)
    * @param string $permission - permission name (optional parameter, if not specified this creteria will not be considered)
    * @param string $plugin_name - name of the plugin calling this method
-   * 
    * @return boolean True if the item has been deleted, false otherwise
    **/
   function ugDeleteAccess ($group, $plugin_name, $resource="" ,$permission=""){
@@ -1783,7 +1824,6 @@ Groups with read access</h3>
    * @param string $plugin_name - name of the plugin calling this method
    * @param int $resource - resource identifier (optional if not specified all resources from this plugin will be deleted)
    * @param string $permission - permission of the resource (optional if not specified resources with all permissions this plugin will be deleted)   
-   * 
    * @return boolean True if the item has been deleted, false otherwise
    **/
   function ugDeleteResource ($plugin_name, $resource="", $permission=""){
