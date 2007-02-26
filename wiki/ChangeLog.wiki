@@ -1,7 +1,6 @@
 #summary This page logs changes in the SVN repository.
 #labels Featured
 
-== Change Log ==
 ===February 26, 2007===
  * Added ugGetRestrictedResources method.
  * Changed members update message to appear in the groups-members page instead of the current group page.
