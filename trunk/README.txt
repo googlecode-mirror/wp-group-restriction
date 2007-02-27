@@ -172,6 +172,18 @@ Keep in mind that both the administrators and the author can read the page.
   function ugGetGroupsOfPlugin($plugin_name, $resource , $permission);
   
   /**
+   * Gets the resources a user has not access
+   * To be used by other plugins
+   * 
+   * @param int $user_id - User identifier
+   * @param string $plugin_name - name of the plugin using this method
+   * @param string $permission - name of the permission (if none is 
+   * 		specified this restriction is ignored)
+   * @return array Restricted resources IDs in array
+   **/     
+  function ugGetRestrictedResources($user_id, $plugin_name, $permission)
+
+  /**
    * Checks if the user has privileges to access a content
    * To be used by other plugins
    * 
