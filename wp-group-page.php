@@ -14,11 +14,11 @@ switch($mode){
       if($_POST['groupName'] == ""){
         $groups->write("Please specify a name for the group.", false);
       }else{
-        $groups->write("A group with the name ".$_POST['groupName']." already exists !", false);
+        $groups->write("A group with the name <b>".$_POST['groupName']."</b> already exists.", false);
       }
     }else{
       if($groups->createGroup ($_POST['groupName'], $_POST['groupPage'])){
-        $groups->write("Group <b>".$_POST['groupName']."</b> created successfuly");
+        $groups->write("Group <b>".$_POST['groupName']."</b> created successfuly.");
       }
     }
     break;
@@ -39,15 +39,15 @@ switch($mode){
         $groups->write("Please specify a name for the group.", false);
         $mode = "edit";
       }else{
-        $groups->write("A group with the name ".$_POST['groupName']." already exists !", false);
+        $groups->write("A group with the name ".$_POST['groupName']." already exists.", false);
         $mode = "edit";
       }
     }else{
       if($groups->updateGroup ($_POST['groupID'], $_POST['groupName'], $_POST['groupPage'])){
-        $groups->write("Group <b>".$_POST['groupName']."</b> updated successfuly");
+        $groups->write("Group <b>".$_POST['groupName']."</b> updated successfuly.");
         $group = "";
       }else{
-        $groups->write("Group <b>".$_POST['prevName']."</b> was not updated successfuly",false);
+        $groups->write("Group <b>".$_POST['prevName']."</b> was not updated successfuly.",false);
         $mode = "edit";
       }
     }
@@ -56,9 +56,9 @@ switch($mode){
     $idDel = $_REQUEST['id'];
     if($idDel != ""){
       if($groups->deleteGroup($idDel)){
-        $groups->write("Group Deleted !");
+        $groups->write("Group Deleted.");
       }else{
-        $groups->write("Invalid group",false);
+        $groups->write("Invalid group.",false);
       }
       $_REQUEST['id'] = "";
     }  
@@ -79,7 +79,12 @@ if($mode!="edit"){?> (<a href="#new">add new</a>)<?php } ?></h2>
     $i = 0;
     if(isset($results) && count($results)>0) {
 ?>
-
+<script type="text/javascript">
+function DelConfirm(name){
+  var message= 'You are about to delete the group "'+name+'", do you wish to continue?';
+  return confirm(message);
+}
+</script>
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
 	<tr class="thead">
 		<th width="40%"><?php _e('Group Name'); ?></th>
@@ -108,12 +113,15 @@ if($mode!="edit"){?> (<a href="#new">add new</a>)<?php } ?></h2>
       }
       echo '<a href="'.$link.'">'.$result->homepage.'</a>';
     }else{
-      echo "N/A";
+      echo "(none)";
     }
     
     ?></td>
     <td> <a class="edit" href="<?php echo $_SERVER['PHP_SELF'];?>?page=wp-group-restriction/wp-group-restriction.php&amp;mode=edit&amp;id=<?php echo $result->id; ?>">Edit</a>	</td>
-    <td> <a class="delete" href="<?php echo $_SERVER['PHP_SELF'];?>?page=wp-group-restriction/wp-group-restriction.php&amp;mode=delete&amp;id=<?php echo $result->id; ?>">Delete</a></td>
+    <td> 
+    	<a class="delete"
+			href="<?php echo $_SERVER['PHP_SELF'];?>?page=wp-group-restriction/wp-group-restriction.php&amp;mode=delete&amp;id=<?php echo $result->id; ?>"
+			onClick="return DelConfirm('<?php echo $result->name; ?>');">Delete</a></td>
 	 </tr>
 	 
 	 <?php

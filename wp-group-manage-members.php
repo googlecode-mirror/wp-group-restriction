@@ -10,12 +10,12 @@ $mode = $_REQUEST['mode'];
 
 if($mode == "update"){
   $group_temp = $groups->getGroup(($_REQUEST['id']));
-	$groups->write("Groups access to '".$group_temp->name."' updated");
+	$groups->write("Groups access to '".$group_temp->name."' updated.");
 }
 
 
 if($_REQUEST['id'] == "" && ($mode == "edit" || $mode == "update")){
-	$groups->write("Error: invalid arguments...");
+	$groups->write("Error: invalid arguments.");
 }
 
 ?>

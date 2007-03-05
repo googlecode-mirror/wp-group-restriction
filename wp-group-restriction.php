@@ -474,7 +474,7 @@ Groups with read and write access</h3>
         name tinytext NOT NULL,
         homepage text,
         UNIQUE KEY id (id)
-       ) ENGINE='INNODB';";
+       );";
 
 
   		dbDelta($sql);
@@ -485,12 +485,8 @@ Groups with read and write access</h3>
   		$sql = "CREATE TABLE ".$table_groupsUsers." (
         id_group bigint(20) UNSIGNED NOT NULL,
         id_user bigint(20) UNSIGNED NOT NULL,
-        FOREIGN KEY (id_group) REFERENCES ".$table_groups."(id)
-                      ON DELETE CASCADE,
-        FOREIGN KEY (id_user) REFERENCES ".$table_users."(ID)
-                      ON DELETE CASCADE,
-		PRIMARY KEY(id_group, id_user)
-       ) ENGINE='INNODB';";
+		    PRIMARY KEY(id_group, id_user)
+       );";
 
   		dbDelta($sql);
   	}
@@ -502,12 +498,8 @@ Groups with read and write access</h3>
         id_page bigint(20) UNSIGNED NOT NULL,
         exc_read tinyint(1) NOT NULL,
         exc_write tinyint(1) NOT NULL,
-        FOREIGN KEY (id_group) REFERENCES ".$table_groups."(id)
-                      ON DELETE CASCADE,
-        FOREIGN KEY (id_page) REFERENCES ".$table_pages."(ID)
-                      ON DELETE CASCADE,
-		PRIMARY KEY(id_group, id_page)
-       ) ENGINE='INNODB';";
+		    PRIMARY KEY(id_group, id_page)
+       );";
 
   		dbDelta($sql);
   	}
@@ -522,10 +514,8 @@ Groups with read and write access</h3>
 					permission text NOT NULL,
 					plugin_name VARCHAR(128) NOT NULL,
 					description text,
-					FOREIGN KEY (id_group) REFERENCES ".$table_groups."(id)
-						ON DELETE CASCADE,
 					PRIMARY KEY(id_group, id_resource, plugin_name)					
-				) ENGINE='INNODB';";
+				);";
 
   		dbDelta($sql);
   	}
