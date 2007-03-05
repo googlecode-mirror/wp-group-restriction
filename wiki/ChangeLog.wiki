@@ -1,6 +1,17 @@
 #summary This page logs changes in the SVN repository.
 #labels Featured
 
+===March 5, 2007===
+ * Added a Cancel button in edit pages.
+ * Added javascript delete confirmation.
+ * Fixed Table name in updateGroup.
+ * Fixed bug in hasPageAccessByCriteria that was not filtering edit privileges for groups.
+ * Fixed groups display while editing a page (groups had checks when they should not have).
+ * Fixed read access for read restricted pages to groups with write access. These groups can now read the pages. 
+ * Improved explanation on how groups restriction works.
+ * Improved feedback messages and title capitalization.
+ * Removed deprecated method: "hasPageAccess($postID)".
+ * Removed foreign Keys usage (Issue #2).
 ===February 26, 2007===
  * Added ugGetRestrictedResources method.
  * Changed members update message to appear in the groups-members page instead of the current group page.
