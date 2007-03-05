@@ -117,7 +117,12 @@ switch($mode){
 			}
 
 			?> <br />
-<div class="submit"><input type="submit" value="Update &raquo;" /></div>
+	<div class="submit">
+		<input type="submit" value="Update" />
+		<input type="button"
+			onclick="javascript:location.href = '?page=wp-group-restriction/manage_pages'"
+			value="Cancel" class="button" />
+	</div>
 </form>
       
 <?php
