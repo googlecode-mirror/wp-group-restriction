@@ -134,7 +134,7 @@ class userGroups {
 	style="margin: 5px 0px 0px -7px;background: #fff url(images/box-head-left.gif) no-repeat top left;">
 <h3 class="dbx-handle"
 	style="margin-left: 7px; margin-bottom: -7px;padding: 6px 1em 0px 3px;	background: #2685af url(images/box-head-right.gif) no-repeat top right;">
-Groups with read access</h3>
+Groups with read and write access</h3>
 </div>
 <div
 	style="margin-left: 10px;margin-right: 0px;background: url(images/box-bg-left.gif) repeat-y left;">
@@ -142,17 +142,6 @@ Groups with read access</h3>
 	style="margin-left: 8px; background: url(images/box-bg-right.gif) repeat-y right; padding: 10px 10px 27px 0px;">
 	<?php
 	if(isset($groups) && count($groups)>0){
-		/*foreach ($groups as $result) {
-			if($result->id_page != ""){
-				$checked = "checked";
-			}else{
-				$checked = "";
-			}
-			echo '<div style="display: block;	float: left;width: 15em;height: 2.5em;margin-bottom: auto;"><label for="group-' .$result->id. '"> ' .
-                    '<input type="checkbox" name="group[' . $result->id . ']" id="group-' . $result->id . '" ' . $checked . '/>&nbsp;'
-                    . $result->name . '</label></div>';
-		}
-		echo '<input type="hidden" name="editgroups" value="true" />';*/
 		echo '<script type="text/javascript"><!--
       
 	      function select_all(name, value) {
@@ -178,12 +167,12 @@ Groups with read access</h3>
 		      	$style = '';
 		    }
 		    $alt = !$alt;
-			if($result->exc_read != ""){
+			if($result->exc_read == "1"){
 				$canRead = "checked";
 			}else{
 				$canRead = "";
 			}
-			if($result->exc_write != ""){
+			if($result->exc_write == "1"){
 				$canWrite = "checked";
 			}else{
 				$canWrite = "";
@@ -1105,6 +1094,7 @@ Groups with read access</h3>
 
       $this->deleteAllGroupUser($id);
       $this->deleteAllGroupPages($id);//deletes correspondent relations group-pages
+      $this->deleteAllGeneric($id);//deletes relations with other plugin resources
       
       return true;
   	}else{
@@ -1162,7 +1152,7 @@ Groups with read access</h3>
 
   	$table = $table_prefix . "ug_Groups";
 
-  	$prevName = $wpdb->get_var("SELECT name FROM $table_groups WHERE id='$groupID';");
+  	$prevName = $wpdb->get_var("SELECT name FROM $table WHERE id='$groupID';");
 
   	if($prevName != $name && !$this->isValidName($name)){
   		return false;
@@ -1207,6 +1197,22 @@ Groups with read access</h3>
   	$table = $table_prefix . "ug_GroupsPage";
 
   	if (userGroups::tableExists($table)) {
+  		$delete = "DELETE FROM $table WHERE id_group='$groupID';";
+  		$results = $wpdb->query( $delete );
+  	}
+  }
+  
+  /**
+   * Removes all Generic resources relations of a given group
+   * 
+   * @param int $groupID - Group Identifier      
+   **/
+  function deleteAllGeneric ($groupID){
+  	global $table_prefix, $wpdb;
+
+  	$table = $table_prefix . "ug_GroupsGeneric";
+
+  	if (userGroups::tableExists($table) && $groupID != "") {
   		$delete = "DELETE FROM $table WHERE id_group='$groupID';";
   		$results = $wpdb->query( $delete );
   	}
@@ -1375,36 +1381,6 @@ Groups with read access</h3>
   function getGroupPagesWithUserByWrite($userID){
   	return $this->getGroupPagesWithUser($userID, " and gu.exc_write='1' ");
   }
-
-  /**
-   * Checks if a user has access to a page
-   * 
-   * @param int $postID - Page identifier
-   * @return boolean True if user has access, false otherwise.      
-   **/     
-  function hasPageAccess($postID){
-  	global $wpdb, $user_level, $wp_query, $user_ID;
-
-  	get_currentuserinfo();
-  	//if is an administrator or the page has no groups
-  	if ($user_level >= 8 || $this->isGroupFreePage($postID)){ return true; }
-  	
-  	// is user already logged in?
-  	if ('' != $user_ID) {
-  		$pages =  $this->getGroupPagesWithUser($user_ID);
-  		$access = false;
-  		// is this page one of the allowed pages
-  		//TODO consider changing to a direct query...
-  		if(isset($pages))
-  		foreach ($pages as $p) {
-  			if($postID == $p->ID) {
-  				//found a page
-  				return true;
-  			}
-  		}
-  	}
-  	return false;
-  }
   
   /**
    * Checks if a user has read access to a page
@@ -1437,34 +1413,50 @@ Groups with read access</h3>
   	global $wpdb, $user_level, $wp_query, $user_ID, $table_prefix;
 
   	get_currentuserinfo();
-
-  	$temp = "";
+  	
+    $temp = "";
   	if ($criteria != "") {
   		$temp = " and gp.$criteria='1' ";
   	}
-  	 
+  	
   	//if is an administrator or the page has no groups
   	if ($user_level >= 8 || $this->isGroupFreePage($postID, $temp)){
   		return true;
   	}
   	
+  	
   	// is user already logged in?
   	if ('' != $user_ID && $criteria != "") {
+	  	if ($criteria == "exc_write") {
+	  		$crit = " AND gp.exc_write='1' ";
+	  	}
   		$table_groupsPages = $table_prefix . "ug_GroupsPage";
   		$table_groupsUsers = $table_prefix . "ug_GroupsUsers";
   		$table_groups = $table_prefix . "ug_Groups";
 
-  		$query = "SELECT gp.$criteria FROM $table_groupsPages gp, $table_groups g,
+  		$query = "SELECT COUNT(*) FROM $table_groupsPages gp, $table_groups g,
                ".$wpdb->posts." p, $table_groupsUsers gu
                 WHERE p.id = '$postID' AND p.id=gp.id_page AND gp.id_group=g.id
-                  AND g.id=gu.id_group AND gu.id_user='$user_ID';";
+                  AND g.id=gu.id_group AND gu.id_user='$user_ID' $crit;";
   		$results = $wpdb->get_var( $query );
-
-  		if($results==1){
+  		//if the value is greater than 0 it means one of the groups the user belongs to has access
+  		if($results>0){
   			return true;
   		}
   	}
   	return false;
+  }
+  
+  /**
+   * Prints the explanation on how page gestriction works
+   */
+  function printExplanation(){
+  	echo "<hr /><b>Note:</b> <br />If a page has exclusive read, only users belonging ";
+	echo "to a group with read or write access will be able to read the pages.<br />";
+	echo "If a page has exclusive write, only users belonging ";
+	echo "to a group with write access will be able to read the pages.<br />";
+	echo "However, if a page is only locked to ";
+	echo "write, others can still read it.";
   }
   
   /**
@@ -1483,8 +1475,12 @@ Groups with read access</h3>
   	}
   	
   	$accessType = "exc_read = '1'";
+  	//if it is for read, we can read if we have write access
+  	$accessTypeQuery = "(gp.exc_read = '1' OR gp.exc_write = '1')";
   	if($forEdit){
   		$accessType = "exc_write = '1'";
+  		//it is for write so we can not give access to nobody without write access
+  		$accessTypeQuery = "gp.exc_write = '1'";
   	}
   	
   	// is user already logged in?
@@ -1494,10 +1490,11 @@ Groups with read access</h3>
   	$table_groups = $table_prefix . "ug_Groups";
 
   	if($user_ID!= ""){
+  		//Get all pages locks by the criteria where the user cannot access
   	  //added "OR p.post_type='page'" for wordpress 2.1 compatibility
   		$query = "SELECT DISTINCT id_page
                   FROM $table_groupsPages 
-                  WHERE exc_read = '1'
+                  WHERE $accessType
                     AND id_page NOT IN
                       (SELECT gp.id_page 
                         FROM $table_groupsPages gp, $table_groups g, 
@@ -1507,15 +1504,13 @@ Groups with read access</h3>
                               AND gp.id_group=g.id
                               AND g.id=gu.id_group 
                               AND gu.id_user='$user_ID'
-                              AND gp.$accessType);";
+                              AND $accessTypeQuery);";
   	}else{
   		$query = "SELECT DISTINCT gp.id_page
                 FROM $table_groupsPages gp 
                 WHERE gp.$accessType;";
   	}
-
   	$results = $wpdb->get_results( $query );
-
     
   	$exclude ="";
   	if(isset($results) && $results!="" && count($results)>0){

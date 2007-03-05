@@ -153,17 +153,19 @@ switch($mode){
 	        " / <a href='#' onclick='select_all(\"groups_write\", false);'>None</a></td>";
 	        echo "</tr>";
 	        echo "</table>";
-	        echo "<hr /><b>Note:</b> If a page has exclusive read, only users belonging ";
-	        echo "to a group with read access will be able to read the pages.<br />";
-	        echo "The same concept applies to exclusive write. However, if a page is only locked to ";
-	        echo "write, others can still read it.";
+	        $groups->printExplanation();
 	      }
       }else{
 	      echo "<p><strong>No groups available.</strong> <a href=\"?page=wp-group-restriction/wp-group-restriction.php#new\">(create a new group)</a></p>";
       }
       ?>
       <br />
-      <div class="submit"><input  type="submit" value="Update &raquo;" /></div>
+      <div class="submit">
+      	<input  type="submit" value="Update" />
+      	<input type="button"
+			onclick="javascript:location.href = '?page=wp-group-restriction/manage_groups'"
+			value="Cancel" class="button" />
+	  </div>
      </form>
       
       <?php

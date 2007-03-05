@@ -169,7 +169,12 @@ $submitName = "Update";
       <tr>
         <td colspan="2" class="submit">                    
           <input type="submit" value="<?php echo $submitName; ?>" class="button" />
-        </td>
+		  <?php if($mode=="edit"){ ?>
+		  <input type="button"
+			onclick="javascript:location.href = '?page=wp-group-restriction/wp-group-restriction.php'"
+			value="Cancel" class="button" />
+		  <?php } ?>
+		  </td>
       </tr>
     </table>
   </form>
