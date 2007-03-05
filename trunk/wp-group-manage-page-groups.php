@@ -10,12 +10,12 @@ $groups = new userGroups();
 $mode = $_REQUEST['mode'];
 
 if($mode == "update"){
-  $groups->write("Groups access to '".get_the_title($_REQUEST['id'])."' updated");
+  $groups->write("Groups access to '".get_the_title($_REQUEST['id'])."' updated.");
 }
 
 
 if($_REQUEST['id'] == "" && $mode == "edit"){
-  $groups->write("Error: invalid arguments...");
+  $groups->write("Error: invalid arguments.");
 }
 
 ?>
@@ -198,7 +198,7 @@ switch($mode){
   default:
 ?>
 
-<h2><?php _e('Pages detailed access'); ?></h2>
+<h2><?php _e('Pages Detailed Access'); ?></h2>
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
 	<tr class="thead">
 		<th><?php _e('Page Title'); ?></th>

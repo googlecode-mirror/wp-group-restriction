@@ -15,7 +15,7 @@ if($mode == "update"){
 
 
 if($_REQUEST['id'] == "" && $mode == "edit"){
-  $groups->write("Error: invalid arguments...");
+  $groups->write("Error: invalid arguments.");
 }
 
 ?>
