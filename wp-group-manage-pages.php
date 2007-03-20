@@ -8,14 +8,24 @@
 $groups = new userGroups();
 
 $mode = $_REQUEST['mode'];
+$cancel = $_REQUEST['cancel'];
 
 if($mode == "update"){
-  	$groups->write("Pages for group '".$_REQUEST['groupName']."' updated.");
+	$message = "Pages access rights for group <b>".$_REQUEST['groupName']."</b> were updated sucessfully.";
+  	$groups->write($message);
+}
+
+switch($cancel){
+	case 1:
+		$groups->write("Group access edit canceled.");
+		break;
+	default: 
+		break;
 }
 
 
 if($_REQUEST['id'] == "" && $mode == "edit"){
-  $groups->write("Error: invalid arguments.");
+  $groups->write("Invalid page.");
 }
 
 ?>
@@ -92,7 +102,7 @@ switch($mode){
         echo "<table id='the-list-x' width='100%' cellpadding='3' cellspacing='3'>";
         echo "<tr class=\"thead\">";
         echo "<th scope='col' rowspan='2'>Page</th>";
-        echo "<th scope='col' colspan='3'>Exclusive</th>";
+        echo "<th scope='col' colspan='3'>Exclusive Access</th>";
         echo "</tr>";
         echo "<tr class=\"thead\">";
         echo "<th scope='col' style='width:7em'>Read</th>";
@@ -117,7 +127,7 @@ switch($mode){
       <div class="submit">
       <input  type="submit" value="Update" />
       <input type="button"
-			onclick="javascript:location.href = '?page=wp-group-restriction/manage_pages'"
+			onclick="javascript:location.href = '?page=wp-group-restriction/manage_pages&amp;cancel=1'"
 			value="Cancel" class="button" />
 	  </div>
      </form>
@@ -154,7 +164,7 @@ switch($mode){
   default:
 ?>
 
-<h2><?php _e('Group Pages'); ?></h2>
+<h2><?php _e('Manage Groups Access'); ?></h2>
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
 	<tr class="thead">
 		<th><?php _e('Group Name'); ?></th>
@@ -178,36 +188,36 @@ switch($mode){
       echo "<tr $style><td>".$result->name."</td><td>";
       $paginas = $groups->getGroupPages($result->id);
       
-      if(isset($paginas))
-      foreach ($paginas as $pagina) {
-        $perms = " (";
-        if($pagina->exc_read){
-          $perms .= "R";
-        }
-        if($pagina->exc_write){
-          $perms .= "W";
-        }
-        $perms .= ")";
-        
-          
-        echo "- ".$pagina->post_title. "$perms<br />"; 
+      if(isset($paginas) && count($paginas) > 0){
+	      foreach ($paginas as $pagina) {
+	        $perms = " (";
+	        if($pagina->exc_read){
+	          $perms .= "R";
+	        }
+	        if($pagina->exc_write){
+	          $perms .= "W";
+	        }
+	        $perms .= ")";
+	        
+	          
+	        echo "- ".$pagina->post_title. "$perms<br />"; 
+	      }
+      }else{
+      	 echo "(no pages)";
       }
       echo "</td><td><a class=\"edit\"  href='".$_SERVER['PHP_SELF'].
         "?page=wp-group-restriction/manage_pages&amp;mode=edit&amp;id="
         .$result->id."'>Edit</a></td></tr>";
-      ?>
-    
-      
-      <?php 
       $i++;
 	}
 	 
-    if($i%2 == 0) {
-    	$style = 'class=\'alternate\'';
-    }  else {
-    	$style = '';
-    }
-    echo "<tr $style><td>Free Access Pages</td><td>";
+//    if($i%2 == 0) {
+//    	$style = 'class=\'alternate\'';
+//    }  else {
+//    	$style = '';
+//    }
+   	echo "<tr><td colspan='3'><div style='font-size:1px;border-bottom:1px dashed #999'>&nbsp;</div></td></tr>";
+    echo "<tr><td>Pages with free access</td><td>";
     $paginas = $groups->getGroupFreePages();
     
     if(isset($paginas))

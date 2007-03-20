@@ -9,14 +9,24 @@ $groups = new userGroups();
 $mode = $_REQUEST['mode'];
 
 if($mode == "update"){
-  $group_temp = $groups->getGroup(($_REQUEST['id']));
-	$groups->write("Groups access to '".$group_temp->name."' updated.");
+	$group_temp = $groups->getGroup(($_REQUEST['id']));
+	$groups->write("Groups access to <b>".$group_temp->name."</b> updated.");
 }
 
 
 if($_REQUEST['id'] == "" && ($mode == "edit" || $mode == "update")){
-	$groups->write("Error: invalid arguments.");
+	$groups->write("Invalid group.");
 }
+
+$cancel = $_REQUEST['cancel'];
+switch($cancel){
+	case 1:
+		$groups->write("Group members edit canceled.");
+		break;
+	default: 
+		break;
+}
+
 
 ?>
 
@@ -53,15 +63,15 @@ function userGroups_PrintGroupMembers(){
 				
 				$number = count($members);
 				if($number == 1)
-				echo "<b>1 user:</b><br />";
+				echo "(1 user)<br />";
 				else
-				echo "<b>$number users:</b><br />";
+				echo "($number users)<br />";
 	
 				foreach ($members as $member) {
 					echo "- ".$member->name. "<br />";
 				}
 			}else{
-				echo "<b>No users</b>";
+				echo "(no users)";
 			}
 			echo "</td><td ".$style."><a class=\"edit\"  href='".$_SERVER['PHP_SELF'].
 	        "?page=wp-group-restriction/group_members&amp;mode=edit&amp;id="
@@ -120,7 +130,7 @@ switch($mode){
 	<div class="submit">
 		<input type="submit" value="Update" />
 		<input type="button"
-			onclick="javascript:location.href = '?page=wp-group-restriction/manage_pages'"
+			onclick="javascript:location.href = '?page=wp-group-restriction/group_members&amp;cancel=1'"
 			value="Cancel" class="button" />
 	</div>
 </form>
