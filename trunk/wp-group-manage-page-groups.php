@@ -9,13 +9,23 @@ $groups = new userGroups();
 
 $mode = $_REQUEST['mode'];
 
+$cancel = $_REQUEST['cancel'];
+switch($cancel){
+	case 1:
+		$groups->write("Page access edit canceled.");
+		break;
+	default: 
+		break;
+}
+
 if($mode == "update"){
-  $groups->write("Groups access to '".get_the_title($_REQUEST['id'])."' updated.");
+	$message = "Groups access rights for page <b>".get_the_title($_REQUEST['id'])."</b> were updated sucessfully.";
+	$groups->write($message);
 }
 
 
 if($_REQUEST['id'] == "" && $mode == "edit"){
-  $groups->write("Error: invalid arguments.");
+	$groups->write("Error: invalid arguments.");
 }
 
 ?>
@@ -25,56 +35,63 @@ if($_REQUEST['id'] == "" && $mode == "edit"){
 
 //prints a page with its groups and then prints the same for its children
 function userGroups_PrintPagesWithGroups($level=0, $parentID=0, $alt=true){
-  $groups = new userGroups();
-  global $wpdb;
-  
-  //added «OR post_type='page'» for wordpress 2.1 compatibility
-  $results = $wpdb->get_results("SELECT * FROM ".$wpdb->posts. 
-                  " WHERE (post_status='static' OR post_type='page') AND post_parent='$parentID';");
-  
-  
-  if(isset($results))
-    foreach ($results as $result) {
-      if($alt) {
-      	$style = 'class=\'alternate\'';
-      }  else {
-      	$style = '';
-      }
-      
-      $spacer = "";
-      for($cont = 0; $cont < $level; $cont++){
-        $spacer .= "-";
-      }
-      
-      echo "<tr ".$style."><td>$spacer ".$result->post_title."</td><td>";
-      $pageGroups = $groups->getAllGroupsWithPage($result->ID);
-      
-      if(isset($pageGroups))
-      foreach ($pageGroups as $grp) {
-        if($grp->exc_read || $grp->exc_write){
-          $perms = " (";
-          if($grp->exc_read){
-            $perms .= "R";
-          }
-          if($grp->exc_write){
-            $perms .= "W";
-          }
-          $perms .= ")";
-          
-            
-          echo "- ".$grp->name. "$perms<br />";
-        } 
-      }
-      echo "</td><td ".$style."><a class=\"edit\"  href='".$_SERVER['PHP_SELF'].
-        "?page=wp-group-restriction/manage_groups&amp;mode=edit&amp;id="
-        .$result->ID."'>Edit</a></td></tr>";
-      ?>
-    
-      
-      <?php 
-      $alt = !$alt;
-      userGroups_PrintPagesWithGroups($level + 1, $result->ID, &$alt);
-	 }
+	global $wpdb;
+	$groups = new userGroups();
+	
+	$query =  "SELECT * FROM ".$wpdb->posts;
+	//added «OR post_type='page'» for wordpress 2.1 compatibility
+	$query .= " WHERE (post_status='static' OR post_type='page') AND post_parent='$parentID';";
+	$results = $wpdb->get_results($query);
+	
+	if(isset($results))
+	  foreach ($results as $result) {
+	    if($alt) {
+	    	$style = 'class=\'alternate\'';
+	    }  else {
+	    	$style = '';
+	    }
+	    
+	    $spacer = "";
+	    for($cont = 0; $cont < $level; $cont++){
+	      $spacer .= "-";
+	    }
+	    
+	    echo "<tr ".$style."><td>$spacer ".$result->post_title."</td><td>";
+	    $pageGroups = $groups->getAllGroupsWithPage($result->ID);
+	    if(isset($pageGroups) && count($pageGroups) > 0){
+	    	$hasGroups = false;
+		    foreach ($pageGroups as $grp) {
+		      if($grp->exc_read || $grp->exc_write){
+		        $perms = " (";
+		        if($grp->exc_read){
+		          $perms .= "R";
+		        }
+		        if($grp->exc_write){
+		          $perms .= "W";
+		        }
+		        $perms .= ")";
+		        
+		          
+		        echo "- ".$grp->name. "$perms<br />";
+		        $hasGroups = true;
+		      }
+		    }
+		    if(!$hasGroups){
+			      	echo "(no groups)";
+		    }
+	    }else{
+	    	echo "(no groups)";
+	    }
+	    echo "</td><td ".$style."><a class=\"edit\"  href='".$_SERVER['PHP_SELF'].
+	      "?page=wp-group-restriction/manage_groups&amp;mode=edit&amp;id=".
+	      $result->ID."'>Edit</a></td></tr>";
+	    ?>
+	
+	
+	<?php 
+	    $alt = !$alt;
+	    userGroups_PrintPagesWithGroups($level + 1, $result->ID, &$alt);
+	}
 }
 
 switch($mode){
@@ -111,7 +128,7 @@ switch($mode){
 	        echo "<table id='the-list-x' width='100%' cellpadding='3' cellspacing='3'>";
 	        echo "<tr class=\"thead\">";
 	        echo "<th scope='col' rowspan='2'>Page</th>";
-	        echo "<th scope='col' colspan='3'>Exclusive</th>";
+	        echo "<th scope='col' colspan='3'>Exclusive Access</th>";
 	        echo "</tr>";
 	        echo "<tr class=\"thead\">";
 	        echo "<th scope='col' style='width:7em'>Read</th>";
@@ -163,7 +180,7 @@ switch($mode){
       <div class="submit">
       	<input  type="submit" value="Update" />
       	<input type="button"
-			onclick="javascript:location.href = '?page=wp-group-restriction/manage_groups'"
+			onclick="javascript:location.href = '?page=wp-group-restriction/manage_groups&amp;cancel=1'"
 			value="Cancel" class="button" />
 	  </div>
      </form>
@@ -198,7 +215,7 @@ switch($mode){
   default:
 ?>
 
-<h2><?php _e('Pages Detailed Access'); ?></h2>
+<h2><?php _e('Manage Pages Access'); ?></h2>
 <table width="100%"  border="0" cellspacing="3" cellpadding="3">
 	<tr class="thead">
 		<th><?php _e('Page Title'); ?></th>

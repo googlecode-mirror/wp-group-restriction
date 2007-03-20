@@ -8,13 +8,11 @@
 
 ---=[ 1 - General Information ]=------------------------------------------------
 
-Version: 1.0 RC1
-Date: 25/01/2006
+Version: 1.0
+Date: 19/03/2006
 Author: Tiago Pocinho, Siemens Networks, S.A.
 
-This plugin is still under development.
-
-Currently it supports filtering pages by groups, assigning users and pages to groups.
+This plugin supports filtering pages by groups, and assigning users and pages to groups.
 
 Support for other plugins is also available.
 
@@ -139,11 +137,11 @@ _____________________
 
 Access "Groups" from the main menu in order to manage the groups:
 * "Groups > Groups" - to manage Existing Groups
-* "Groups > Pages Access" - to add and remove pages from groups
-* "Groups > Access per Page" - to add and remove groups from pages
+* "Groups > Groups Access" - to add and remove pages from groups
+* "Groups > Pages Access" - to add and remove groups from pages
 * "Groups > Members" - to add and remove users from groups 
 
-Note: Free Access Pages are pages without a group.
+Note: "Pages with free access" are pages without a group.
 
 4.2) User Management
 ____________________
