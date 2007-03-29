@@ -1,7 +1,7 @@
 #summary This page logs changes in the SVN repository.
 #labels Featured
 ===March 29th, 2007===
- * Fixed pass-by-reference issue (#5)
+ * Fixed pass-by-reference issue (#5).
  * Fixed issue in updating the profile for users without administration level. Updating the profile removed the user from groups.
 ===March 20th, 2007===
  * Added support for group description.
