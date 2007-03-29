@@ -36,7 +36,7 @@ if($_REQUEST['id'] == "" && $mode == "edit"){
 /**
  *  prints the page and the access values
  **/ 
-function printPage($pagina, &$alt, $groups, $group_id, $level){
+function printPage($pagina, $alt, $groups, $group_id, $level){
   if($alt){
     echo "<tr class='alternate'>";
   }else{
@@ -59,15 +59,17 @@ function printPage($pagina, &$alt, $groups, $group_id, $level){
   echo "</tr>";
   
   $children = $groups->getAllPagesWithGroupByParent($group_id, $pagina->ID);
-  pagesByParent($children, &$alt, $groups, $group_id, $level+1);
+  $alt = pagesByParent($children, $alt, $groups, $group_id, $level+1);
+  return $alt;
 }
 
-function pagesByParent($paginas,&$alt, $groups, $group_id, $level = 0){
+function pagesByParent($paginas,$alt, $groups, $group_id, $level = 0){
   if(isset($paginas) && count($paginas)>0){
     foreach ($paginas as $pagina) {
-      printPage($pagina, &$alt, $groups, $group_id, $level);
+    	$alt = printPage($pagina, $alt, $groups, $group_id, $level);
     }
   }
+  return $alt;
 }
 
 switch($mode){
@@ -210,12 +212,7 @@ switch($mode){
         .$result->id."'>Edit</a></td></tr>";
       $i++;
 	}
-	 
-//    if($i%2 == 0) {
-//    	$style = 'class=\'alternate\'';
-//    }  else {
-//    	$style = '';
-//    }
+	
    	echo "<tr><td colspan='3'><div style='font-size:1px;border-bottom:1px dashed #999'>&nbsp;</div></td></tr>";
     echo "<tr><td>Pages with free access</td><td>";
     $paginas = $groups->getGroupFreePages();

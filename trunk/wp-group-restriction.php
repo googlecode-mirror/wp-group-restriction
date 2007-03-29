@@ -421,7 +421,7 @@ Define Groups Exclusive Access Rights</h3>
 	 * @param boolean $useCurrentUser Indicates if the user is the current user or another user
 	 **/
 	function handle_user_groups_edit($useCurrentUser=false) {
-		global $user_ID, $table_prefix, $wpdb;
+		global $user_ID, $user_level, $table_prefix, $wpdb;
 
 		get_currentuserinfo();
 
@@ -430,10 +430,14 @@ Define Groups Exclusive Access Rights</h3>
 		}else{
 			$user = new WP_User($_POST['user_id']);
 		}
+		
+		//if we are not an administrator we cannot modify the groups
+		if ($user_level < 8){
+			return true;
+		}
 
 		$groups = $this->getAllGroupsWithUser($user->id);
 
-		$table = $table_prefix . "ug_GroupsUsers";
 		if(isset($groups))
 		foreach ($groups as $group) {
 			if(isset($_POST['group'][$group->id])){ //Group checked
