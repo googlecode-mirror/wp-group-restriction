@@ -90,8 +90,9 @@ function userGroups_PrintPagesWithGroups($level=0, $parentID=0, $alt=true){
 	
 	<?php 
 	    $alt = !$alt;
-	    userGroups_PrintPagesWithGroups($level + 1, $result->ID, &$alt);
+	    $alt = userGroups_PrintPagesWithGroups($level + 1, $result->ID, $alt);
 	}
+	return $alt;
 }
 
 switch($mode){

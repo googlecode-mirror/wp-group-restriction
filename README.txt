@@ -16,7 +16,7 @@ This plugin supports filtering pages by groups, and assigning users and pages to
 
 Support for other plugins is also available.
 
----=[ 2- Licence ]=-------------------------------------------------------------
+---=[ 2- License ]=-------------------------------------------------------------
 
 This plugin is protected under the GNU General Public License.
 
