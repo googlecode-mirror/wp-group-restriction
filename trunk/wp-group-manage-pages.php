@@ -111,7 +111,7 @@ switch($mode){
         echo "<th scope='col' style='width:7em'>Write</th>";
         echo "</tr>";
         $alt = true;
-        print pagesByParent($paginas, &$alt, $groups, $group->id);
+        print pagesByParent($paginas, $alt, $groups, $group->id);
         echo "<tr >";
         echo "<td scope='col'>&nbsp;</td>";
         echo "<td scope='col' style='text-align:center;'>".
