@@ -15,7 +15,6 @@ Go to the Wordpress back-office and activate the plugin. This will create the ne
 To filter out access from the front office, update your theme to call: 
 {{{  
   if(class_exists("userGroups")){
-    $groups = new userGroups();
     $pagesToExclude = userGroups::getPagesToExclude();
   }
 }}}
