@@ -22,7 +22,7 @@ and add the returning value to
 {{{
 wp_list_pages("exclude=" . $pagesToExclude . "&sort_column=menu_order&depth=1&title_li=");
 }}}
-This allows to hide pages the user has no reading access. Notice that this code should be between php tags: `<?php ?>`.
+This allows to hide pages the user has no reading access. Notice that this code should be between php tags: `<?php` and `?>`.
 
 ====For Wordpress < 2.1====
 For Wordpress versions *prior to 2.1*, a hack is needed to filter out the pages the current user can edit from the pages list (Manage Pages) in the backoffice.
